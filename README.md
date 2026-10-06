@@ -6,3 +6,19 @@
 - 50개 산업 · 95개 직무 · 대표기업 · 주차별 취업준비 로드맵(최대 24개월) · PDF 저장·인쇄
 - 전체 기능판(공공기관 탐색·진단 포함): https://helper83.github.io/helpertom/
 - 개인정보처리방침: privacy.html
+
+## 온라인으로 열기
+
+```
+https://helper83.github.io/helpertom-mini/
+```
+
+(GitHub Pages가 꺼져 있다면 저장소 Settings → Pages 에서 Source를 `Deploy from a branch` / `main` / `/(root)` 로 설정하세요.)
+
+## 로컬에서 열기
+
+`index.html` 파일을 내려받아 브라우저로 열면 바로 실행됩니다.
+
+## 운영
+
+비전HR컨설팅 · 문의: hp83@naver.com
