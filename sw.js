@@ -1,12 +1,5 @@
-const CACHE = 'helpertom-mini-v1';
-const FILES = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png'
-];
+const CACHE = 'helpertom-mini-v2';
+const FILES = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
@@ -15,17 +8,21 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
   );
   self.clients.claim();
 });
 
+/* 네트워크 우선: 온라인이면 항상 최신 파일을 받고, 오프라인일 때만 캐시를 사용(배포 후 옛 화면이 남는 문제 방지) */
 self.addEventListener('fetch', e => {
-  // POST 등 비-GET 요청(구글시트 전송 등)은 캐시하지 않고 그대로 네트워크로
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+    fetch(e.request, { cache: 'no-cache' })
+      .then(res => {
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+        return res;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
