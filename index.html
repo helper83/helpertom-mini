@@ -447,7 +447,7 @@ footer .btn{font-size:13px}
   .detail{margin-top:14px;padding-top:14px}.detail-head h2{font-size:20px}.lead{font-size:14px}.quick{grid-template-columns:1fr}.quick div{padding:10px}
   .likert{gap:4px}.likert span{min-height:54px;padding:4px 2px}.diag-bar{top:62px;padding:8px 10px;gap:8px}.diag-bar .btn{padding:5px 8px;font-size:12px;min-height:34px}
   .prep-step{padding:13px}.kpi{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .mobile-bottom{position:fixed;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));left:0;right:0;bottom:0;z-index:90;background:rgba(255,255,255,.97);border-top:1px solid var(--line);padding:5px 5px calc(5px + env(safe-area-inset-bottom));box-shadow:0 -4px 18px rgba(24,33,47,.08)}
+  .mobile-bottom{position:fixed;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));left:0;right:0;bottom:0;z-index:90;background:rgba(255,255,255,.97);border-top:1px solid var(--line);padding:5px 5px calc(5px + env(safe-area-inset-bottom));box-shadow:0 -4px 18px rgba(24,33,47,.08)}
   .mobile-bottom .stop{padding:4px 1px 2px;border:0;gap:1px;min-height:54px}.mobile-bottom .stop .dot{width:26px;height:26px;font-size:12px}.mobile-bottom .stop .lbl{font-size:11px}.mobile-bottom .stop .meta{display:none}.mobile-bottom .stop.active{color:var(--primary-ink)}
   footer{padding:12px 12px 88px}.toast{bottom:82px}
 }
@@ -514,7 +514,7 @@ footer .btn{font-size:13px}
 /* ---------- v3.4 student dashboard ---------- */
 
 
-@media(max-width:760px){.mobile-bottom{grid-template-columns:repeat(7,minmax(0,1fr))}.mobile-bottom .stop{min-width:0}.mobile-bottom .stop .lbl{font-size:11px}}
+@media(max-width:760px){.mobile-bottom{grid-template-columns:repeat(5,minmax(0,1fr))}.mobile-bottom .stop{min-width:0}.mobile-bottom .stop .lbl{font-size:11px}}
 
 
 /* ---------- v3.8 student diagnosis journey & 90-job specific scheduler ---------- */
@@ -807,6 +807,23 @@ body{background:var(--bg)!important}
 #roadmapPage table.kv th,#roadmapPage table.kv td,#roadmapPage .tbl-wrap th,#roadmapPage .tbl-wrap td{border-color:#A9B7C9}
 </style>
 
+<style id="majorStyle">
+.stop[data-page="majorPage"]{--tc:var(--t0)}
+.mj-input{display:flex;gap:8px}.mj-input input{flex:1;min-width:0}
+.mj-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.mj-col{border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;background:var(--surface)}
+.mj-col h3{margin:0 0 2px;font-size:16px}
+.mj-list{list-style:none;margin:8px 0 0;padding:0}
+.mj-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line2);flex-wrap:wrap}
+.mj-row:first-child{border-top:0}
+.mj-n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--sunk);color:var(--primary-ink);font-size:12px;font-weight:700;flex:0 0 auto}
+.mj-name{flex:1 1 130px;min-width:0;text-align:left;border:0;background:none;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;padding:2px 0}
+.mj-name:hover{color:var(--primary-ink);text-decoration:underline}
+.mj-bar{flex:0 0 52px;height:6px;border-radius:3px;background:var(--sunk)}.mj-bar i{display:block;height:6px;border-radius:3px;background:var(--primary)}
+.mj-badge{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--sunk);border:1px solid var(--line2);font-size:12px;color:var(--ink2)}
+.mj-badge.thin{background:#FFF4DC;border-color:#F0D9A0;color:#7A5200}
+@media(max-width:700px){.mj-cols{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div id="loading" class="loading" role="status">데이터를 준비하고 있습니다…</div>
@@ -816,17 +833,18 @@ body{background:var(--bg)!important}
       <img class="brand-mark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwLjI1IiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMzY3OEYyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjM1OEQ4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTUiIGZpbGw9InVybCgjZykiLz48cGF0aCBkPSJNMTkgMTYgVjQ4IE00NSAyOCBWNDggTTE5IDMzIEg0NSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik00NSA4IEw1NiAyMiBMMzQgMjIgWiIgZmlsbD0iI0Y5Q0I1RSIgc3Ryb2tlPSIjMzE3MEVFIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=" alt="" width="36" height="36" aria-hidden="true">
       <div>
         <div class="brand-name">헬퍼탐 미니</div>
-        <div class="brand-sub">산업·직무 탐색 → 진로 결정 → 로드맵 · 헬퍼손</div>
+        <div class="brand-sub">학과·산업·직무 탐색 → 진로 결정 → 로드맵 · 헬퍼손</div>
       </div>
     </div>
     <button type="button" class="progress-pills" id="progressPills" aria-live="polite" title="관심목록 확인·진로 결정" onclick="openPage('preparePage')" style="border:0;background:transparent;cursor:pointer;padding:0;font:inherit"></button>
   </div>
   <nav class="route" aria-label="실습 단계">
     <ol>
-      <li><button class="stop active" data-page="industryPage" onclick="openPage('industryPage')"><span class="dot">1</span><span class="lbl">산업 탐색</span><span class="meta" id="navMetaIndustry"></span></button></li>
-      <li><button class="stop" data-page="jobPage" onclick="openPage('jobPage')"><span class="dot">2</span><span class="lbl">직무 탐색</span><span class="meta" id="navMetaJob"></span></button></li>
-      <li><button class="stop" data-page="preparePage" onclick="openPage('preparePage')"><span class="dot">3</span><span class="lbl">진로 결정</span><span class="meta" id="navMetaPlan"></span></button></li>
-      <li><button class="stop" data-page="roadmapPage" onclick="openPage('roadmapPage')"><span class="dot">4</span><span class="lbl">진로 로드맵</span><span class="meta" id="navMetaRoad"></span></button></li>
+      <li><button class="stop active" data-page="majorPage" onclick="openPage('majorPage')"><span class="dot">1</span><span class="lbl">학과 탐색</span><span class="meta" id="navMetaMajor"></span></button></li>
+      <li><button class="stop" data-page="industryPage" onclick="openPage('industryPage')"><span class="dot">2</span><span class="lbl">산업 탐색</span><span class="meta" id="navMetaIndustry"></span></button></li>
+      <li><button class="stop" data-page="jobPage" onclick="openPage('jobPage')"><span class="dot">3</span><span class="lbl">직무 탐색</span><span class="meta" id="navMetaJob"></span></button></li>
+      <li><button class="stop" data-page="preparePage" onclick="openPage('preparePage')"><span class="dot">4</span><span class="lbl">진로 결정</span><span class="meta" id="navMetaPlan"></span></button></li>
+      <li><button class="stop" data-page="roadmapPage" onclick="openPage('roadmapPage')"><span class="dot">5</span><span class="lbl">진로 로드맵</span><span class="meta" id="navMetaRoad"></span></button></li>
     </ol>
   </nav>
 </header>
@@ -834,15 +852,43 @@ body{background:var(--bg)!important}
 <main>
   
 
-  <!-- 1. 산업 -->
-  <section id="industryPage" class="page active" aria-labelledby="h-ind">
+  <!-- 1. 학과 (v1.3 신규) -->
+  <section id="majorPage" class="page active" aria-labelledby="h-major">
     <div class="card">
       <div class="page-head">
         <div>
           <div class="step-tag">1단계</div>
+          <h1 id="h-major">학과 탐색</h1>
+          <p class="muted">내 학과를 입력하면 전공과 연결이 높은 산업과 직무를 5개씩 추천합니다. 마음에 드는 항목은 ☆ 찜 하기로 담고 산업·직무 탐색에서 자세히 확인하세요.</p>
+          <p class="muted small">사용 순서: ① 학과 입력 → ② 산업·직무 탐색 → ③ 진로 결정 → ④ 로드맵 확인. 입력 내용은 이 기기 브라우저에만 저장됩니다.</p>
+        </div>
+      </div>
+      <div class="search">
+        <label class="label" for="majorInput">내 학과(전공)</label>
+        <div class="mj-input">
+          <input id="majorInput" type="search" list="majorList" placeholder="예: 경영학과, 컴퓨터공학과, 간호학과" autocomplete="off" onkeydown="if(event.key==='Enter'){majorSearch();}">
+          <button class="btn primary" type="button" onclick="majorSearch()">추천 보기</button>
+        </div>
+        <datalist id="majorList"></datalist>
+      </div>
+      <div id="majorSuggest"></div>
+      <div class="step">
+        <div class="step-title">계열로 둘러보기</div>
+        <div id="majorGroups" class="tags"></div>
+      </div>
+      <div id="majorResult" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 2. 산업 -->
+  <section id="industryPage" class="page" aria-labelledby="h-ind">
+    <div class="card">
+      <div class="page-head">
+        <div>
+          <div class="step-tag">2단계</div>
           <h1 id="h-ind">산업 탐색</h1>
           <p class="muted">산업 생태계를 먼저 고르고, 세부 산업과 대표기업으로 좁혀 보세요. 기업명으로 바로 찾을 수도 있습니다.</p>
-          <p class="muted small">사용 순서: ① 산업·직무를 둘러보며 ☆ 찜 하기 → ② 3단계 진로 결정에서 목표 1개 조합 선택 → ③ 4단계 로드맵 확인(PDF 저장·인쇄). 입력 내용은 이 기기 브라우저에만 저장됩니다.</p>
+          <p class="muted small">사용 순서: ① 산업·직무를 둘러보며 ☆ 찜 하기 → ② 4단계 진로 결정에서 목표 1개 조합 선택 → ③ 5단계 로드맵 확인(PDF 저장·인쇄). 입력 내용은 이 기기 브라우저에만 저장됩니다.</p>
         </div>
       </div>
       <div class="learn">
@@ -879,7 +925,7 @@ body{background:var(--bg)!important}
     <div class="card">
       <div class="page-head">
         <div>
-          <div class="step-tag">2단계</div>
+          <div class="step-tag">3단계</div>
           <h1 id="h-job">직무 탐색</h1>
           <p class="muted">직무는 ‘무슨 일을 해서 어떤 결과를 내는가’로 이해합니다. 세부직무·결과물·성과 기준까지 확인하세요.</p>
         </div>
@@ -918,9 +964,9 @@ body{background:var(--bg)!important}
     <div class="card">
       <div class="page-head">
         <div>
-          <div class="step-tag">3단계</div>
+          <div class="step-tag">4단계</div>
           <h1 id="h-prep">진로 결정</h1>
-          <p class="muted">관심목록을 비교해 목표 산업·직무 1개 조합과 준비 조건을 정합니다. 정한 뒤 4단계에서 로드맵을 확인하세요.</p>
+          <p class="muted">관심목록을 비교해 목표 산업·직무 1개 조합과 준비 조건을 정합니다. 정한 뒤 5단계에서 로드맵을 확인하세요.</p>
         </div>
       </div>
       <div class="prep-step no-print">
@@ -974,11 +1020,11 @@ body{background:var(--bg)!important}
     <div class="card">
       <div class="page-head">
         <div>
-          <div class="step-tag">4단계</div>
+          <div class="step-tag">5단계</div>
           <h1 id="h-road">나의 진로 로드맵</h1>
-          <p class="muted">3단계에서 정한 목표와 조건으로 만든 맞춤 로드맵입니다.</p>
+          <p class="muted">4단계에서 정한 목표와 조건으로 만든 맞춤 로드맵입니다.</p>
         </div>
-        <button class="btn no-print" type="button" onclick="openPage('preparePage')">← 3단계에서 목표·조건 수정</button>
+        <button class="btn no-print" type="button" onclick="openPage('preparePage')">← 4단계에서 목표·조건 수정</button>
       </div>
       <div id="planResult" class="plan"></div>
       <div class="btn-row no-print">
@@ -988,10 +1034,11 @@ body{background:var(--bg)!important}
     </div>
   </section>
 <nav class="mobile-bottom no-print" aria-label="모바일 주요 메뉴">
-  <button class="stop active" data-page="industryPage" onclick="openPage('industryPage')"><span class="dot">1</span><span class="lbl">산업</span></button>
-  <button class="stop" data-page="jobPage" onclick="openPage('jobPage')"><span class="dot">2</span><span class="lbl">직무</span></button>
-  <button class="stop" data-page="preparePage" onclick="openPage('preparePage')"><span class="dot">3</span><span class="lbl">진로 결정</span></button>
-  <button class="stop" data-page="roadmapPage" onclick="openPage('roadmapPage')"><span class="dot">4</span><span class="lbl">로드맵</span></button>
+  <button class="stop active" data-page="majorPage" onclick="openPage('majorPage')"><span class="dot">1</span><span class="lbl">학과</span></button>
+  <button class="stop" data-page="industryPage" onclick="openPage('industryPage')"><span class="dot">2</span><span class="lbl">산업</span></button>
+  <button class="stop" data-page="jobPage" onclick="openPage('jobPage')"><span class="dot">3</span><span class="lbl">직무</span></button>
+  <button class="stop" data-page="preparePage" onclick="openPage('preparePage')"><span class="dot">4</span><span class="lbl">진로 결정</span></button>
+  <button class="stop" data-page="roadmapPage" onclick="openPage('roadmapPage')"><span class="dot">5</span><span class="lbl">로드맵</span></button>
 </nav>
 
 </main>
@@ -1017,7 +1064,8 @@ const KEYS = {
   interests: 'visionhr_interest_v1',
   plan: 'visionhr_plan_v1',
   guide: 'visionhr_guide_hidden_v1',
-  schedule: 'visionhr_schedule_v1'
+  schedule: 'visionhr_schedule_v1',
+  major: 'visionhr_major_v1'
 };
 const LS = {
   mem: {},
@@ -1263,6 +1311,7 @@ function renderProgress() {
     $(id).textContent = text;
     $(id).closest('.stop').classList.toggle('has', !!has);
   };
+  setMeta('navMetaMajor', LS.get(KEYS.major, null) && (LS.get(KEYS.major, null).q || LS.get(KEYS.major, null).g) ? '입력함' : '', LS.get(KEYS.major, null) && (LS.get(KEYS.major, null).q || LS.get(KEYS.major, null).g));
   setMeta('navMetaIndustry', n('INDUSTRY') ? '★ ' + n('INDUSTRY') : '', n('INDUSTRY'));
   setMeta('navMetaJob', n('JOB') ? '★ ' + n('JOB') : '', n('JOB'));
   const plan = LS.get(KEYS.plan, null);
@@ -1561,7 +1610,7 @@ function showIndustry(code) {
       (ind.entryLevel ? '<span class="tag" title="이 산업에 신입이 들어가기 쉬운 정도">신입 진입 용이성 : ' + esc(easeLabel(ind.entryLevel)) + '</span>' : '') +
     '</div>' +
     (splitList(ind.subIndustries).length ? '<div style="margin-top:12px"><b class="small">대표 세부시장</b>' + tagList(first(ind.subIndustries, 6)) + '</div>' : '') +
-    '<p class="industry-intro-help">☆ 찜 하기를 누르면 <b>3단계 진로 결정 → 내가 찜한 관심목록</b>에 바로 표시되고, 3단계 목표 산업 선택 목록에서도 ★ 찜한 항목으로 우선 노출됩니다.</p>' +
+    '<p class="industry-intro-help">☆ 찜 하기를 누르면 <b>4단계 진로 결정 → 내가 찜한 관심목록</b>에 바로 표시되고, 4단계 목표 산업·직무 선택 목록에도 ★ 찜한 항목만 나타납니다.</p>' +
   '</div>';
 
   h += '%%GLOSS%%';
@@ -1836,7 +1885,7 @@ function showJob(code) {
   if (moreIndustries.length) {
     h += '<details class="more"><summary>직접 연결 산업 ' + moreIndustries.length + '개 더 보기</summary><div class="in">' + industryLinkTags(moreIndustries) + '</div></details>';
   }
-  h += '<p class="muted small">산업×직무 연결 분석 결과입니다. 산업 이름을 누르면 1단계 산업 상세로 이동합니다.</p>';
+  h += '<p class="muted small">산업×직무 연결 분석 결과입니다. 산업 이름을 누르면 2단계 산업 상세로 이동합니다.</p>';
   const relJobs = codesIn(job.relatedJobs).filter(function (c) { return c !== code; });
   if (relJobs.length) h += '<h3>함께 비교할 직무</h3>' + jobLinkTags(relJobs);
   h += '<h3>준비 방법</h3><div class="grid g2">' +
@@ -1959,7 +2008,7 @@ function startPlan(o) {
   LS.set(KEYS.plan, saved);
   const miss = [];
   if (!saved.i) miss.push('산업'); if (!saved.j) miss.push('직무');
-  toast('진로 결정(3단계) 목표에 반영했습니다' + (miss.length ? ' · ' + miss.join('·') + '도 골라 주세요' : ''));
+  toast('진로 결정(4단계) 목표에 반영했습니다' + (miss.length ? ' · ' + miss.join('·') + '도 골라 주세요' : ''));
   openPage('preparePage');
   scrollToEl($('planIndustrySelect').closest('.prep-step'));
 }
@@ -2055,7 +2104,7 @@ function planSelectNote() {
   if (!el) return;
   if (!miss.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
   el.style.display = '';
-  el.innerHTML = '찜한 ' + miss.join('·') + '이(가) 없어 <b>전체 목록</b>을 보여 드립니다. 1·2단계에서 ☆를 눌러 담으면 이곳에는 찜한 항목만 표시됩니다.';
+  el.innerHTML = '찜한 ' + miss.join('·') + '이(가) 없어 <b>전체 목록</b>을 보여 드립니다. 1~3단계에서 ☆를 눌러 담으면 이곳에는 찜한 항목만 표시됩니다.';
 }
 function renderPrepare() {
   const saved = LS.get(KEYS.plan, {}) || {};
@@ -2199,7 +2248,7 @@ function makePlan() {
   const v = readPlanInput();
   const box = $('planResult');
   if (!v.i || !v.j) {
-    box.innerHTML = '<p class="muted" style="margin-top:12px">3단계에서 목표 산업과 직무를 고르면 여기에 로드맵이 만들어집니다.</p><div class="btn-row no-print"><button class="btn primary" type="button" onclick="openPage(\'preparePage\')">← 5단계 진로 결정으로 가기</button></div>';
+    box.innerHTML = '<p class="muted" style="margin-top:12px">4단계에서 목표 산업과 직무를 고르면 여기에 로드맵이 만들어집니다.</p><div class="btn-row no-print"><button class="btn primary" type="button" onclick="openPage(\'preparePage\')">← 4단계 진로 결정으로 가기</button></div>';
     return;
   }
   const ip = industryPkg(v.i), jp = jobPkg(v.j);
@@ -2544,7 +2593,7 @@ function printPlan() {
 }
 function resetAllAppData() {
   if (!window.confirm('이 기기의 관심목록, 진로 결정·로드맵·스케줄러 체크를 모두 지울까요? 되돌릴 수 없습니다.')) return;
-  [KEYS.interests, KEYS.plan, KEYS.guide, KEYS.schedule, PLAN_CHECK_KEY, SCHED_OPEN_KEY].forEach(function (k) { LS.del(k); });
+  [KEYS.interests, KEYS.plan, KEYS.guide, KEYS.schedule, KEYS.major, PLAN_CHECK_KEY, SCHED_OPEN_KEY].forEach(function (k) { LS.del(k); });
   window.location.reload();
 }
 
@@ -2567,6 +2616,182 @@ function renderDataStats() {
   document.querySelectorAll('.js-job-groups').forEach(function (e) { e.textContent = JOB_GROUP_META.length; });
   if (DB.meta) { DB.meta.companies = nCo; DB.meta.displayCompanyEntries = nEntries; DB.meta.displayUniqueCompanies = nCo; DB.meta.revision = 'v12.0-final'; }
 }
+/* ===== v1.3 학과 탐색: 학과 사전 + 추천 산출 (순수 함수) ===== */
+/* 학과 사전은 일반적인 대학 학과 분류 기준이며, 대학알리미·학교별 학과 목록으로 보강할 수 있도록 MAJOR_GROUPS의 depts만 교체하면 됩니다.
+   '학과명|추가키워드' 형식: 추가키워드는 산업×직무 연결표의 '전공 연계' 문구와 대조할 낱말입니다. */
+const MAJOR_GROUPS = [
+  { id: 'BIZ', name: '상경·경영', kw: ['경영학', '경제학', '회계학', '금융학', '세무학'], depts: ['경영학과', '경영학부', '경영정보학과', '국제경영학과', '글로벌경영학과', '경제학과', '경제금융학부|금융', '금융학과|금융', '회계학과|회계,세무', '세무학과|세무,회계', '무역학과|무역,통상', '국제통상학과|통상,무역', '국제무역학과|무역,통상', '부동산학과|부동산', '유통학과|유통', '마케팅학과|광고홍보'] },
+  { id: 'LAW', name: '법·행정·정치', kw: ['법학', '행정', '정책', '정치'], depts: ['법학과', '법학부', '행정학과', '정책학과', '정치외교학과', '국제관계학과', '공공인재학과|행정', '경찰행정학과|행정', '공공행정학과|행정'] },
+  { id: 'EDU', name: '교육·심리·사회복지', kw: ['교육학', '교육공학', '사회복지', '사회과학'], depts: ['교육학과', '유아교육과|교육학', '초등교육과|교육학', '평생교육학과|교육학', '교육공학과|교육공학', '심리학과|심리학', '상담심리학과|심리학', '사회복지학과', '청소년학과', '아동학과|사회복지', '사회학과|사회과학'] },
+  { id: 'HUM', name: '인문·어문·미디어', kw: ['국문', '문예', '외국어', '문화콘텐츠'], depts: ['국어국문학과|=국문,문예,문화콘텐츠', '영어영문학과|외국어', '불어불문학과|외국어', '독어독문학과|외국어', '중어중문학과|외국어', '일어일문학과|외국어', '사학과', '철학과', '문헌정보학과', '언어학과', '신문방송학과|=신문방송,미디어,광고홍보,문화콘텐츠', '미디어커뮤니케이션학과|=미디어,신문방송,광고홍보,문화콘텐츠', '광고홍보학과|=광고홍보,미디어,신문방송', '문화콘텐츠학과|문화콘텐츠', '문예창작학과|문예'] },
+  { id: 'DES', name: '디자인·예술', kw: ['디자인', 'UX'], depts: ['시각디자인학과', '산업디자인학과', '디자인학부', '미디어디자인학과', '실용음악과|실용음악,엔터테인먼트', '웹툰학과|엔터테인먼트', '연극영화학과|엔터테인먼트', '패션디자인학과|디자인', '영상디자인학과|디자인'] },
+  { id: 'IT', name: '컴퓨터·IT', kw: ['컴퓨터공학', '소프트웨어', '정보통신', '전산', '데이터사이언스'], depts: ['컴퓨터공학과', '컴퓨터공학부', '컴퓨터과학과', '소프트웨어학과', '정보통신공학과', '인공지능학과|데이터사이언스', '데이터사이언스학과', '정보보호학과|정보통신', '사이버보안학과|정보통신', '게임공학과|소프트웨어', '전산학과'] },
+  { id: 'STAT', name: '수학·통계·산업공학', kw: ['통계학', '수학', '산업공학'], depts: ['통계학과', '수학과', '응용수학과', '산업공학과', '산업경영공학과', '데이터정보학과|통계학'] },
+  { id: 'ENG', name: '기계·전기전자·제조', kw: ['기계', '전기전자', '제조', '산업공학'], depts: ['기계공학과', '기계설계공학과', '자동차공학과|기계', '메카트로닉스공학과|기계', '로봇공학과|기계', '전기공학과|전기전자', '전자공학과|전기전자', '전기전자공학부|전기전자', '제어계측공학과|전기전자', '반도체공학과|전기전자'] },
+  { id: 'MAT', name: '화학·재료·에너지', kw: ['화학', '재료'], depts: ['화학공학과', '화학과', '신소재공학과', '재료공학과', '고분자공학과|화학', '에너지공학과|화학', '나노공학과|재료'] },
+  { id: 'ARC', name: '건축·토목·환경', kw: ['건축', '토목', '도시', '조경', '환경', '안전'], depts: ['건축학과', '건축공학과', '토목공학과', '도시공학과', '조경학과', '환경공학과', '안전공학과', '소방방재학과|안전'] },
+  { id: 'BIO', name: '생명·농림·식품', kw: ['농학', '원예', '축산', '동물', '산림', '수산', '생명과학'], depts: ['생명과학과', '생명공학과|생명과학', '식품공학과|생명과학', '식품영양학과|생명과학', '농학과', '원예학과', '동물자원학과', '산림학과', '수산학과'] },
+  { id: 'MED', name: '의약·보건', kw: ['의학', '약학', '간호', '보건', '의료', '재활'], depts: ['의학과', '약학과', '간호학과', '보건학과', '보건행정학과', '물리치료학과|재활', '작업치료학과|재활', '임상병리학과|의료', '방사선학과|의료', '치위생학과|보건', '응급구조학과|의료', '의공학과|의료'] },
+  { id: 'TOUR', name: '관광·서비스·체육', kw: ['관광', '호텔', '외식', '조리', '체육', '미용', '서비스'], depts: ['관광학과', '호텔경영학과|호텔', '외식조리학과|외식,조리', '조리학과|조리', '체육학과', '스포츠과학과|체육', '사회체육학과|체육', '미용학과', '항공서비스학과|서비스'] },
+  { id: 'LOG', name: '항공·해양·물류', kw: ['항공', '철도', '해양', '물류', '유통'], depts: ['항공운항학과|항공', '항공우주공학과|항공', '물류학과|물류', '물류유통학과|물류,유통', '조선해양공학과|해양', '해양학과|해양', '철도공학과|철도'] }
+];
+const MAJOR_EDGE_W = { 3: 3, 2: 2, 1: 0.5 };
+function majorNorm(s) { return String(s || '').replace(/\s+/g, '').replace(/학(과|부)$/, '학').replace(/(전공|계열)$/, '').replace(/[과부]$/, '').toLowerCase(); }
+function majorEntries() {
+  const out = [];
+  MAJOR_GROUPS.forEach(function (g) {
+    g.depts.forEach(function (d) {
+      const p = d.split('|');
+      const only = p[1] && p[1].charAt(0) === '=';
+      out.push({ name: p[0], key: majorNorm(p[0]), group: g, extra: p[1] && !only ? p[1].split(',') : [], only: only ? p[1].slice(1).split(',') : null });
+    });
+  });
+  return out;
+}
+/* 입력 → { entries: 일치 학과 목록, group, label, kw } */
+function majorResolve(input) {
+  const q = majorNorm(input);
+  if (!q) return null;
+  const all = majorEntries();
+  let hit = all.filter(function (e) { return e.key === q; });
+  let suggest = all.filter(function (e) { return e.key !== q && ((q.length >= 3 ? e.key.indexOf(q) !== -1 : e.key.indexOf(q) === 0) || (e.key.length >= 2 && q.indexOf(e.key) === 0)); });
+  if (!hit.length && suggest.length) { hit = [suggest[0]]; suggest = suggest.slice(1); }
+  if (hit.length) {
+    const e = hit[0];
+    return { label: e.name, group: e.group, kw: e.only || e.group.kw.concat(e.extra), core: e.extra, suggest: suggest.slice(0, 6), exact: majorNorm(e.name) === q };
+  }
+  /* 사전에 없으면 전공군 이름·키워드로 가장 가까운 전공군을 찾는다 */
+  for (let i = 0; i < MAJOR_GROUPS.length; i++) {
+    const g = MAJOR_GROUPS[i];
+    if (g.name.replace(/[·]/g, '').indexOf(q) !== -1 || g.kw.some(function (k) { return q.length >= 2 && (k.indexOf(q) !== -1 || q.indexOf(k) !== -1); })) {
+      return { label: String(input).trim(), group: g, kw: g.kw, core: [], suggest: [], exact: false, byKeyword: true };
+    }
+  }
+  return null;
+}
+function majorResolveGroup(id) {
+  const g = MAJOR_GROUPS.filter(function (x) { return x.id === id; })[0];
+  return g ? { label: g.name + ' 계열', group: g, kw: g.kw, core: [], suggest: [], exact: false, byGroup: true } : null;
+}
+/* 추천 산출: DB.edgeLookup의 '전공 연계' 문구와 키워드를 대조해 산업·직무별 점수를 합산 */
+function majorRecommend(DBx, refMap, r, n) {
+  n = n || 5;
+  const IN = {}, JB = {};
+  DBx.industries.forEach(function (x) { IN[x.code] = x.name; });
+  DBx.jobs.forEach(function (x) { JB[x.code] = x.name; });
+  const ic = {}, jc = {};
+  let evidence = 0;
+  Object.keys(DBx.edgeLookup || {}).forEach(function (k) {
+    const v = DBx.edgeLookup[k];
+    const sc = Array.isArray(v) ? Number(v[0]) || 0 : Number(v.edgeScore) || 0;
+    const txt = Array.isArray(v) ? (v[2] || '') : (v.majorLink || '');
+    if (!sc || !txt) return;
+    let m = 0;
+    r.kw.forEach(function (kw) { if (txt.indexOf(kw) !== -1) m++; });
+    (r.core || []).forEach(function (kw) { if (txt.indexOf(kw) !== -1) m++; });
+    if (!m) return;
+    if (sc >= 2) evidence++;
+    const w = (MAJOR_EDGE_W[sc] || 0) * Math.min(m, 3);
+    const p = k.split('|');
+    ic[p[0]] = (ic[p[0]] || 0) + w;
+    jc[p[1]] = (jc[p[1]] || 0) + w;
+  });
+  /* 산업별 관련 전공 참고 목록(INDUSTRY_MAJOR_REFERENCE)에 학과 핵심어가 있으면 가산 */
+  const core = (r.core || []).concat(majorNorm(r.label).length >= 2 ? [majorNorm(r.label)] : []);
+  Object.keys(refMap || {}).forEach(function (code) {
+    const hits = (refMap[code] || []).filter(function (m) { return core.some(function (c) { return c && (m.indexOf(c) !== -1 || c.indexOf(m) !== -1); }); }).length;
+    if (hits && IN[code]) ic[code] = (ic[code] || 0) + hits * 6;
+  });
+  const top = function (map, names) {
+    const arr = Object.keys(map).filter(function (c) { return names[c]; }).map(function (c) { return { code: c, name: names[c], score: map[c] }; });
+    arr.sort(function (a, b) { return b.score - a.score || (a.code < b.code ? -1 : 1); });
+    const max = arr.length ? arr[0].score : 1;
+    return arr.slice(0, n).map(function (x) { x.pct = Math.max(8, Math.round(x.score / max * 100)); return x; });
+  };
+  return { industries: top(ic, IN), jobs: top(jc, JB), evidence: evidence };
+}
+
+/* ===== v1.3 학과 탐색 화면 ===== */
+function majorDeptNames() { return majorEntries().map(function (e) { return e.name; }); }
+function majorInit() {
+  const dl = $('majorList');
+  if (dl) dl.innerHTML = majorDeptNames().map(function (n) { return '<option value="' + esc(n) + '"></option>'; }).join('');
+  const g = $('majorGroups');
+  if (g) g.innerHTML = MAJOR_GROUPS.map(function (x) { return '<button type="button" class="tag link" data-g="' + esc(x.id) + '" onclick="majorGroupBtn(this)">' + esc(x.name) + '</button>'; }).join('');
+  const saved = LS.get(KEYS.major, null);
+  if (saved && (saved.q || saved.g)) {
+    if (saved.g) majorShow(majorResolveGroup(saved.g), '', false);
+    else { $('majorInput').value = saved.q; majorShow(majorResolve(saved.q), saved.q, false); }
+  } else {
+    $('majorResult').innerHTML = '<div class="learn"><b>학과명을 입력하면 추천이 시작됩니다.</b><p class="small" style="margin:6px 0 0">정확한 학과명이 아니어도 됩니다(예: 경영, 컴퓨터, 간호). 학과명이 목록에 없으면 아래 "계열로 둘러보기"에서 가까운 계열을 고르세요.</p></div>';
+  }
+}
+function majorSearch() {
+  const q = String($('majorInput').value || '').trim();
+  if (!q) { toast('학과명을 입력해 주세요'); $('majorInput').focus(); return; }
+  LS.set(KEYS.major, { q: q, g: '' });
+  majorShow(majorResolve(q), q, true);
+}
+function majorPickBtn(btn) { $('majorInput').value = btn.getAttribute('data-q'); majorSearch(); }
+function majorGroupBtn(btn) {
+  const id = btn.getAttribute('data-g');
+  $('majorInput').value = '';
+  LS.set(KEYS.major, { q: '', g: id });
+  majorShow(majorResolveGroup(id), '', true);
+}
+function majorRows(type, list) {
+  return '<ul class="mj-list">' + list.map(function (x, i) {
+    return '<li class="mj-row"><span class="mj-n">' + (i + 1) + '</span>' +
+      '<button type="button" class="mj-name" data-go="' + (type === 'INDUSTRY' ? 'goIndustry' : 'goJob') + '" data-id="' + esc(x.code) + '" onclick="interestGo(this)">' + esc(x.name) + '</button>' +
+      '<span class="mj-bar" title="연결 정도(1위 대비)"><i style="width:' + x.pct + '%"></i></span>' + starButton(type, x.code, x.name, true) + '</li>';
+  }).join('') + '</ul>';
+}
+function majorShow(r, q, scroll) {
+  const box = $('majorResult'), sg = $('majorSuggest');
+  STATE.major = null;
+  if (!r) {
+    sg.innerHTML = '';
+    box.innerHTML = '<div class="learn"><b>“' + esc(q) + '” 학과를 찾지 못했습니다.</b><p class="small" style="margin:6px 0 0">학과명을 줄여 입력하거나(예: 경영, 컴퓨터, 간호) 아래 “계열로 둘러보기”에서 가까운 계열을 골라 보세요.</p></div>';
+    return;
+  }
+  const out = majorRecommend(DB, INDUSTRY_MAJOR_REFERENCE, r, 5);
+  STATE.major = out;
+  const thin = out.evidence < 30;
+  sg.innerHTML = (r.suggest && r.suggest.length) ? '<div class="small muted" style="margin-top:8px">비슷한 학과명</div><div class="tags">' + r.suggest.map(function (e) {
+    return '<button type="button" class="tag link" data-q="' + esc(e.name) + '" onclick="majorPickBtn(this)">' + esc(e.name) + '</button>';
+  }).join('') + '</div>' : '';
+  let h = '<div class="learn"><strong class="t">' + esc(r.label) + ' → ' + esc(r.group.name) + ' 전공군' + (r.exact || r.byGroup ? '' : ' (가장 가까운 학과로 해석)') + '</strong>' +
+    '<p class="small" style="margin:6px 0 0">앱의 산업×직무 연결표에서 이 전공군과 연결된 항목을 합산한 참고 추천입니다. ' +
+    '<span class="mj-badge' + (thin ? ' thin' : '') + '">' + (thin ? '참고 수준 · ' : '') + '연결 데이터 ' + out.evidence + '건</span></p>' +
+    (thin ? '<p class="small muted" style="margin:6px 0 0">이 전공군은 연결 데이터가 적어 순위 차이가 크지 않습니다. 관심 분야를 넓게 보고 채용공고로 확인하세요.</p>' : '') + '</div>';
+  h += '<div class="mj-cols"><div class="mj-col"><h3>추천 산업 TOP 5</h3><p class="small muted" style="margin:0">전공 연결이 높은 산업 순 · 이름을 누르면 상세로 이동</p>' + majorRows('INDUSTRY', out.industries) + '</div>' +
+    '<div class="mj-col"><h3>추천 직무 TOP 5</h3><p class="small muted" style="margin:0">전공 연결이 높은 직무 순 · 이름을 누르면 상세로 이동</p>' + majorRows('JOB', out.jobs) + '</div></div>' +
+    '<div class="btn-row no-print"><button class="btn primary" type="button" onclick="majorAddAll()">추천 10개 관심목록에 담기</button>' +
+    '<button class="btn" type="button" onclick="openPage(\'industryPage\')">산업 탐색으로 이동</button>' +
+    '<button class="btn" type="button" onclick="openPage(\'jobPage\')">직무 탐색으로 이동</button></div>' +
+    '<p class="muted small" style="margin-top:10px">관심목록은 산업·직무 각 ' + MAX_INTEREST + '개까지 담을 수 있어 남은 칸만큼만 담깁니다. 전공은 지원 자격을 제한하는 조건이 아니라 참고정보입니다. 실제 요구 전공은 채용공고로 확인하세요. 학과 사전은 일반적인 학과 분류 기준이며 대학알리미·학교별 학과 목록으로 보강할 수 있습니다.</p>';
+  box.innerHTML = h;
+  renderProgress();
+  if (scroll) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function majorAddAll() {
+  const m = STATE.major;
+  if (!m) return;
+  let add = 0, skip = 0;
+  [['INDUSTRY', m.industries], ['JOB', m.jobs]].forEach(function (p) {
+    p[1].forEach(function (x) {
+      const list = STATE.interests[p[0]];
+      if (list.some(function (y) { return y.id === x.code; })) return;
+      if (list.length >= MAX_INTEREST) { skip++; return; }
+      list.push({ id: x.code, name: x.name });
+      add++;
+    });
+  });
+  saveInterests();
+  toast(add ? '관심목록에 ' + add + '개를 담았습니다' + (skip ? ' · 상한(' + MAX_INTEREST + '개) 때문에 ' + skip + '개는 제외' : '')
+    : (skip ? '관심목록이 가득 찼습니다(산업·직무 각 ' + MAX_INTEREST + '개). 하나를 빼고 다시 눌러 주세요' : '추천 항목이 이미 모두 담겨 있습니다'));
+}
+
 function initializeApp() {
   try { if (window.AndroidBridge && $('appEditionBadge')) $('appEditionBadge').style.display = ''; } catch (e) { /* ignore */ }
   normalizePrepTerms();
@@ -2574,8 +2799,9 @@ function initializeApp() {
   loadInterests();
   renderIndustryGroups();
   renderJobGroups();
+  majorInit();
   renderProgress();
-  openPage('industryPage');
+  openPage('majorPage');
   $('loading').classList.add('off');
   window.addEventListener('resize', function () {
     document.documentElement.style.setProperty('--head-h', ($('siteHeader').offsetHeight + 6) + 'px');
