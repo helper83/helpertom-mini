@@ -933,6 +933,7 @@ body{background:var(--bg)!important}
           <div><label class="label" for="planIndustrySelect">목표 산업</label><select id="planIndustrySelect" onchange="onPlanInput()"></select></div>
           <div><label class="label" for="planJobSelect">목표 직무</label><select id="planJobSelect" onchange="onPlanInput()"></select></div>
         </div>
+        <p id="planSelectNote" class="muted small" style="display:none;margin:8px 0 0"></p>
         <div id="goalSummary" class="goal-box">산업과 직무를 고르면 두 선택이 얼마나 연결되는지 함께 보여 드립니다.</div>
       </div>
       <div class="prep-step no-print">
@@ -2032,11 +2033,29 @@ function optionGroups(kind, selected) {
   const interest = STATE.interests[isI ? 'INDUSTRY' : 'JOB'].map(function (x) { return x.id; }).filter(function (c) { return byCode[c]; });
   const opt = function (c, suffix) { return '<option value="' + c + '"' + (c === selected ? ' selected' : '') + '>' + esc(byCode[c].name + (suffix || '')) + '</option>'; };
   let h = '<option value="">' + (isI ? '산업을' : '직무를') + ' 선택하세요</option>';
-  if (interest.length) h += '<optgroup label="★ 내 관심목록">' + interest.map(function (c) { return opt(c); }).join('') + '</optgroup>';
-  const recOnly = [];
-  const rest = (isI ? DB.industries : DB.jobs).map(function (x) { return x.code; }).filter(function (c) { return interest.indexOf(c) === -1 && recOnly.indexOf(c) === -1; });
-  h += '<optgroup label="전체 ' + (isI ? '산업' : '직무') + '">' + rest.map(function (c) { return opt(c, ' · ' + c); }).join('') + '</optgroup>';
+  if (interest.length) {
+    /* v1.2: 찜한 항목이 있으면 찜한 것만 보여 줌 (없을 때만 전체 목록으로 대체) */
+    h += '<optgroup label="★ 내 관심목록">' + interest.map(function (c) { return opt(c); }).join('') + '</optgroup>';
+    /* 이미 저장된 목표가 찜 목록에 없으면(찜 해제·기관 상세 자동 채움 등) 선택값이 사라지지 않도록 별도 표시 */
+    if (selected && interest.indexOf(selected) === -1 && byCode[selected]) {
+      h += '<optgroup label="현재 선택(찜 아님)">' + opt(selected, ' · ' + selected) + '</optgroup>';
+    }
+    return h;
+  }
+  const all = (isI ? DB.industries : DB.jobs).map(function (x) { return x.code; });
+  h += '<optgroup label="전체 ' + (isI ? '산업' : '직무') + '">' + all.map(function (c) { return opt(c, ' · ' + c); }).join('') + '</optgroup>';
   return h;
+}
+function planSelectNote() {
+  const n = function (type) { return STATE.interests[type].filter(function (x) { return (type === 'INDUSTRY' ? INDUSTRY_BY : JOB_BY)[x.id]; }).length; };
+  const miss = [];
+  if (!n('INDUSTRY')) miss.push('산업');
+  if (!n('JOB')) miss.push('직무');
+  const el = $('planSelectNote');
+  if (!el) return;
+  if (!miss.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  el.style.display = '';
+  el.innerHTML = '찜한 ' + miss.join('·') + '이(가) 없어 <b>전체 목록</b>을 보여 드립니다. 1·2단계에서 ☆를 눌러 담으면 이곳에는 찜한 항목만 표시됩니다.';
 }
 function renderPrepare() {
   const saved = LS.get(KEYS.plan, {}) || {};
@@ -2051,6 +2070,7 @@ function renderPrepare() {
   /* 3. 목표 선택 */
   $('planIndustrySelect').innerHTML = optionGroups('I', saved.i || '');
   $('planJobSelect').innerHTML = optionGroups('J', saved.j || '');
+  planSelectNote();
   if (saved.status !== undefined) {
     var _mig = { '3-1': '3', '3-2': '3', '4-1': '4', '4-2': '4' };
     $('planStatus').value = _mig[saved.status] || saved.status;
@@ -2089,9 +2109,20 @@ function updateGoalSummary() {
   if (!v.i || !v.j) { box.innerHTML = '산업과 직무를 모두 고르면 두 선택이 얼마나 연결되는지 보여 드립니다.'; return; }
   const e = edgeOf(v.i, v.j);
   const t = EDGE_TEXT[e.score] || EDGE_TEXT[0];
+  /* v1.2: 대안 산업 문구 — 핵심 연결(3)이 없으면 직접 연결(2)로 대체, 둘 다 없으면 줄 자체를 숨김 */
+  let alt = '';
+  if (e.score <= 1) {
+    const pick = function (sc) {
+      return DB.industries.filter(function (i) { return i.code !== v.i && edgeOf(i.code, v.j).score === sc; });
+    };
+    let label = '이 직무와 연결이 강한 산업', list = pick(3);
+    if (!list.length) { label = '이 직무 채용이 꾸준한 산업'; list = pick(2); }
+    if (list.length) {
+      alt = '<div class="small" style="margin-top:4px">대안 · ' + label + ': ' + list.slice(0, 4).map(function (i) { return esc(i.name); }).join(', ') + (list.length > 4 ? ' 외 ' + (list.length - 4) + '개' : '') + '</div>';
+    }
+  }
   box.innerHTML = '<b>' + esc(INDUSTRY_BY[v.i].name) + '</b> × <b>' + esc(JOB_BY[v.j].name) + '</b> ' + edgeBadge(e.score) +
-    '<div class="small" style="margin-top:4px">' + esc(t[2]) + (e.entry ? ' 이 조합의 신입 진입 용이성: ' + esc(easeLabel(e.entry)) + '.' : '') + (e.major ? ' 전공 연계: ' + esc(e.major) + '.' : '') + '</div>' +
-    (e.score <= 1 ? '<div class="small" style="margin-top:4px">대안 · 이 직무와 연결이 강한 산업: ' + DB.industries.filter(function (i) { return edgeOf(i.code, v.j).score === 3; }).slice(0, 4).map(function (i) { return esc(i.name); }).join(', ') + '</div>' : '');
+    '<div class="small" style="margin-top:4px">' + esc(t[2]) + (e.entry ? ' 이 조합의 신입 진입 용이성: ' + esc(easeLabel(e.entry)) + '.' : '') + (e.major ? ' 전공 연계: ' + esc(e.major) + '.' : '') + '</div>' + alt;
 }
 const STATUS_GUIDE = {
   '1': { label: '1학년', items: ['관심 산업·직무를 넓게 탐색하고, 흥미 있는 분야를 3개 이내로 기록해 두기', '전공 기초 과목과 학점 관리를 우선순위로 두고 기본기를 쌓기', '교내 프로그램(진로특강·학과 행사·동아리)에 참여해 일의 세계를 직접 보기'] },
