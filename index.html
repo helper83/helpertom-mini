@@ -1657,7 +1657,7 @@ function nearestItems(q, kind, limit) {
 /* v1.8: 원하는 산업·직무가 없을 때 ‘의견 보내기’ — 이용자가 보내기를 누를 때만 구글 드라이브로 전송(기기에 저장하지 않음) */
 const WISH_DRIVE_ACCOUNT = 'helper83@gmail.com';
 /* 선택: 구글 Apps Script 웹앱 URL을 넣으면 '드라이브로 보내기'가 시트에 바로 기록됩니다. 설정 방법은 docs/wish-drive-setup.md 참고. 비어 있으면 공유·파일 저장 방식으로 동작합니다. */
-const WISH_WEBHOOK_URL = '';
+const WISH_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw9b3lPZsI4avZArbro0swZHbby3_KnB5zxpqzSbp51a9LzORvgYNVmsMcayk30La_V/exec';
 const WISH_KIND_LABEL = { industry: '산업', job: '직무', both: '산업·직무' };
 function wishNote(kind, q) {
   const nm = kind === 'I' ? '산업' : '직무';

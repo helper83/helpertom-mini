@@ -10,7 +10,7 @@
 1. helper83@gmail.com으로 구글 시트 `헬퍼탐 희망분야 메모` 생성 → 주소의 ID 복사
 2. 확장 프로그램 → Apps Script에 아래 코드 붙여넣기 (SHEET_ID 수정)
 3. 배포 → 새 배포 → 웹 앱 / 실행: 나 / 액세스: **모든 사용자** → URL 복사
-4. index.html의 `WISH_WEBHOOK_URL = ''`에 URL 입력 후 배포
+4. index.html의 `WISH_WEBHOOK_URL`에 URL 입력 후 배포 (**2026-10-14 연결 완료**, 시트 `헬퍼탐 희망분야 메모`)
 
 ```js
 const SHEET_ID = '여기에_시트_ID';
