@@ -252,6 +252,18 @@ select:focus,input:focus{outline:none;border-color:#7db6e2;box-shadow:0 0 0 3px 
 .search-results{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .search-results .empty{font-size:13px;color:var(--muted)}
 .hit{border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r-md);padding:6px 10px;font-size:13px;cursor:pointer;text-align:left}
+.wish-cta{margin-top:8px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}
+.wish-near{width:100%;margin-top:6px}.wish-near small{color:var(--muted)}
+.wish-modal{position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.5);display:flex;align-items:flex-end;justify-content:center;padding:0}
+.wish-modal.hidden{display:none}
+.wish-card{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px 16px 24px;box-sizing:border-box}
+@media (min-width:640px){.wish-modal{align-items:center}.wish-card{border-radius:16px}}
+.wish-head{display:flex;justify-content:space-between;align-items:center}.wish-head h2{margin:0;font-size:18px}
+.wish-note{font-size:13px;color:var(--muted);margin:8px 0}
+.wish-card input[type=text],.wish-card select,.wish-card textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:var(--r-md);padding:8px 10px;font:inherit;font-size:14px;background:var(--surface);color:var(--ink);margin-bottom:6px}
+.wish-status{font-size:13px;margin-top:10px;min-height:18px}
+.wish-saved{margin-top:14px;font-size:13px}.wish-list{list-style:none;padding:0;margin:6px 0 0}
+.wish-list li{border-top:1px solid var(--line);padding:8px 0;font-size:13px}.wish-list .why{color:var(--muted);margin-top:2px}.wish-list .empty{color:var(--muted)}
 .hit:hover{border-color:var(--primary);background:var(--tint)}
 .hit small{color:var(--muted);margin-left:4px}
 
@@ -1452,6 +1464,293 @@ function resetIndustryGroup() {
   $('industryDetail').innerHTML = '';
   scrollToEl($('industryGroupGrid'));
 }
+/* v1.8: 산업·직무 동의어 사전 — 사용자가 쓰는 말(약칭·직함·업계 용어) → 앱의 산업/직무 코드 */
+const INDUSTRY_SYN = {
+  F01:'농업,축산,수산,어업,양식,스마트팜,농식품,임업,종자,사료,그린바이오,곤충,식물공장',
+  F02:'철강,제철,금속,알루미늄,비철,주조,제강,기초소재,포스코',
+  F03:'화학,석유화학,정유,플라스틱,고분자,페인트,도료,접착제,나프타,화학물질',
+  F04:'환경,폐기물,재활용,수처리,상하수도,폐수,리사이클링,탄소중립,대기오염,자원순환',
+  F05:'전력,한전,발전,도시가스,원자력,가스,송배전,정유,에너지공기업',
+  F06:'태양광,풍력,수소,연료전지,재생에너지,신재생,ESS,그린에너지',
+  F07:'이차전지,2차전지,배터리,전기차배터리,양극재,음극재,분리막,전해질,리튬',
+  F08:'메모리,파운드리,팹,웨이퍼,칩,시스템반도체,HBM,후공정,팹리스,OSAT,반도체장비',
+  F09:'OLED,LCD,패널,카메라모듈,광학,렌즈,마이크로LED',
+  F10:'전자부품,PCB,MLCC,커패시터,센서,커넥터,기판,수동소자',
+  F11:'통신사,이동통신,5G,SKT,KT,LG유플러스,네트워크장비,통신망',
+  F12:'보안,사이버보안,해킹,침해대응,백신,보안관제,개인정보보호',
+  F13:'가전,스마트폰,TV,웨어러블,전자제품,IT기기,모바일기기,삼성전자,LG전자',
+  F14:'자동차,전기차,완성차,자율주행,자동차부품,모빌리티,EV,UAM,커넥티드카,현대차',
+  F15:'산업기계,공작기계,건설기계,장비,중장비,펌프,공구,산업용장비',
+  F16:'협동로봇,자동화,스마트팩토리,공장자동화,FA,드론,서비스로봇',
+  F17:'선박건조,해양플랜트,해양,조선소,LNG선',
+  F18:'항공우주,우주,방산,방위산업,위성,국방산업,무기체계,로켓,항공기제작',
+  F19:'건설사,토목,건축,플랜트,시공,엔지니어링,인프라,EPC,건설업',
+  F20:'디벨로퍼,자산관리,리츠,REITs,시행,분양,PF,임대,부동산업',
+  F21:'종합상사,수출입,트레이딩,상사,글로벌비즈니스,해외사업',
+  F22:'택배,풀필먼트,창고,SCM,유통물류,3PL,배송,라스트마일',
+  F23:'항만,철도,운송,버스,화물운송,선사,코레일,육상운송,해운',
+  F24:'항공사,공항,항공서비스,항공운송,지상조업,항공',
+  F25:'리테일,백화점,마트,편의점,면세점,소매,오프라인유통',
+  F26:'이커머스,온라인쇼핑,쇼핑몰,커머스,온라인몰,D2C,소셜커머스,쿠팡',
+  F27:'식품회사,음료,푸드테크,건강기능식품,가공식품,F&B,제과,펫푸드',
+  F28:'프랜차이즈,레스토랑,카페,요식업,식당,커피전문점,외식업',
+  F29:'뷰티,코스메틱,스킨케어,K뷰티,향수,ODM화장품',
+  F30:'의류,섬유,의류브랜드,어패럴,의복,봉제,신발',
+  F31:'생활용품,소비재,가구,인테리어,홈데코,생필품,침구,주방용품,완구,반려동물용품',
+  F32:'제약회사,의약품,신약,신약개발,제네릭,제약사',
+  F33:'바이오,바이오의약품,바이오시밀러,CDMO,CMO,세포치료제,항체,백신,유전자치료',
+  F34:'디지털헬스,헬스케어기기,의료AI,진단기기,원격의료,디지털치료제,의료기기회사',
+  F35:'병원,의료기관,의원,헬스케어서비스,검진,요양,의료서비스,상급종합병원',
+  F36:'관광,호텔,여행,레저,리조트,카지노,테마파크,MICE',
+  F37:'은행,여신,금융권,시중은행,카드사,캐피탈,저축은행,대출',
+  F38:'증권,자산운용,투자은행,IB,벤처캐피탈,VC,PE,펀드,애널리스트',
+  F39:'보험사,손해보험,생명보험,보험설계',
+  F40:'핀테크,전자금융,간편결제,인터넷은행,토스,디지털금융,가상자산',
+  F41:'광고,광고대행사,방송,마케팅대행,마케팅에이전시,언론,미디어',
+  F42:'엔터,엔터테인먼트,연예,연예기획사,음악,영화,드라마,웹툰,웹소설,K콘텐츠,OTT,공연',
+  F43:'교육업계,에듀테크,학원,교육서비스,온라인교육,입시',
+  F44:'비영리,NGO,NPO,복지,사회복지,사회적기업,재단,공익,국제개발,봉사',
+  F45:'컨설팅,회계법인,법률,로펌,세무법인,인증기관,전문서비스,감사법인,특허',
+  F46:'AI,인공지능,빅데이터,데이터,머신러닝,생성형AI,LLM,데이터솔루션,AI스타트업',
+  F47:'소프트웨어,SaaS,솔루션,IT솔루션,패키지소프트웨어,B2B소프트웨어',
+  F48:'IT서비스,SI,클라우드,IDC,데이터센터,시스템통합,MSP',
+  F49:'플랫폼,인터넷,포털,네이버,카카오,앱서비스,스타트업,IT기업',
+  F50:'게임,게임회사,게임개발,모바일게임,e스포츠,게임퍼블리싱'
+};
+const JOB_SYN = {
+  J01:'경영기획,전략기획,기획팀,사업계획,경영전략,기획자',
+  J02:'신사업,사업개발,BD,신규사업,신사업개발,제휴,전략제휴',
+  J03:'PM,프로젝트매니저,프로젝트관리,PMO,사업관리,프로젝트',
+  J04:'PO,프로덕트매니저,서비스기획,상품기획,제품기획,프로덕트오너',
+  J05:'HR,인사,채용,노무,인사팀,HRM,리크루터,급여',
+  J06:'HRD,교육담당,조직개발,OD,조직문화,인재개발,사내교육',
+  J07:'총무,행정,사무,비서,사무직,행정직,경영지원,일반사무',
+  J08:'재무,재무기획,관리회계,재경,경영관리,재무팀,FP&A',
+  J09:'회계,세무,경리,회계사,세무사,결산,재무회계',
+  J10:'자금,IR,공시,투자자관계,자금팀',
+  J11:'은행원,은행,여신,금융영업,PB,리테일금융,대출심사,기업금융',
+  J12:'증권,투자,애널리스트,자산운용,펀드매니저,트레이더,리서치,IB',
+  J13:'보험,보험심사,언더라이팅,손해사정,보험계리,계리사,금융리스크',
+  J14:'법무,변호사,계약,지식재산,특허,변리사,법무팀',
+  J15:'컴플라이언스,감사,내부통제,준법감시,감사팀,내부감사',
+  J16:'공무원,공공,행정직,정책,공기업,공공기관,공공행정,지자체',
+  J17:'경찰,교정,국방,군인,군무원,경찰공무원,교도관,부사관,장교',
+  J18:'소방,소방관,재난,안전관리,재난안전,119',
+  J19:'경비,경호,보안요원,시큐리티,경호원',
+  J20:'마케터,마케팅,브랜드,브랜딩,브랜드매니저,BM,마케팅기획',
+  J21:'퍼포먼스,디지털마케팅,퍼포먼스마케터,SEO,SNS마케팅,온라인마케팅,그로스,그로스마케팅',
+  J22:'시장조사,고객분석,리서처,마켓리서치,소비자조사,CRM분석',
+  J23:'홍보,PR,커뮤니케이션,대외협력,언론홍보,기업홍보',
+  J24:'영업,영업관리,기술영업,세일즈,영업사원,B2B영업,법인영업,어카운트매니저,AE',
+  J25:'해외영업,무역,수출입,무역사무,해외마케팅,글로벌영업,바이어',
+  J26:'MD,머천다이저,상품기획자,상품운영,이커머스운영,쇼핑몰운영,온라인MD',
+  J27:'CS,CX,고객서비스,고객성공,고객지원,콜센터,상담원,고객센터,CSM',
+  J28:'구매,조달,소싱,구매팀,자재구매,바잉,구매담당',
+  J29:'SCM,수요예측,공급계획,수급,수요계획',
+  J30:'물류,창고,풀필먼트,물류운영,물류센터,재고관리,입출고',
+  J31:'운송,포워딩,배송,수배송,포워더,화물',
+  J32:'R&D,연구개발기획,기술전략,선행연구,연구기획,기술기획,연구원',
+  J33:'기계설계,기구설계,설계엔지니어,기계공학,CAD,기구개발,기계엔지니어',
+  J34:'전기설계,회로설계,전자설계,하드웨어,HW개발,임베디드,전자엔지니어,펌웨어,전기엔지니어',
+  J35:'소재연구,화학연구,바이오연구,연구소,공정연구,화학공학,신소재,연구직,바이오연구원',
+  J36:'시험,평가,검증,인증,신뢰성,시험평가,테스트엔지니어,시험원',
+  J37:'생산관리,생산,제조,생산직,공장관리,생산계획',
+  J38:'생산기술,공정기술,공정엔지니어,공정개선,양산,제조기술',
+  J39:'품질,QC,QA,품질관리,품질보증,품질경영,품질엔지니어',
+  J40:'설비,보전,정비,설비관리,설비엔지니어,정비사',
+  J41:'기술지원,필드서비스,AS,서비스엔지니어,현장지원,FAE,세일즈엔지니어',
+  J42:'IT기획,ITPM,정보화기획,IT프로젝트,시스템기획',
+  J43:'개발자,프로그래머,소프트웨어개발,SW개발,백엔드,프론트엔드,웹개발,앱개발,풀스택,서버개발,SW엔지니어',
+  J44:'ERP,SAP,업무시스템,전산,시스템운영,전산직,SM',
+  J45:'클라우드,서버,DevOps,인프라,시스템엔지니어,SRE,AWS,인프라엔지니어',
+  J46:'네트워크,통신,네트워크엔지니어,통신엔지니어,망운용,RF',
+  J47:'정보보안,보안,개인정보,보안관제,사이버보안,CISO,모의해킹,ISMS',
+  J48:'데이터분석,BI,데이터분석가,분석가,데이터애널리스트,비즈니스분석,데이터',
+  J49:'데이터엔지니어,데이터엔지니어링,ETL,데이터파이프라인,빅데이터엔지니어,DBA',
+  J50:'AI,머신러닝,딥러닝,인공지능,ML,AI엔지니어,데이터사이언티스트,데이터사이언스,AI트레이너,프롬프트엔지니어,LLM',
+  J51:'UX,UI,UX디자인,UI디자인,웹디자인,앱디자인,프로덕트디자이너,서비스디자인',
+  J52:'제품디자인,산업디자인,인더스트리얼디자인,제품디자이너,CMF',
+  J53:'그래픽디자인,시각디자인,브랜드디자인,디자이너,편집디자인,일러스트',
+  J54:'콘텐츠기획,콘텐츠제작,유튜브,크리에이터,SNS콘텐츠,콘텐츠마케팅,디지털콘텐츠,카피라이터,웹툰작가',
+  J55:'PD,방송,영상제작,영상편집,촬영,방송작가,미디어제작,감독',
+  J56:'기자,언론,출판,편집자,에디터,편집,작가,저널리스트,출판사',
+  J57:'공연기획,전시기획,큐레이터,문화예술,예술행정,학예사,문화기획,공연',
+  J58:'통역,번역,통번역,언어서비스,번역가,통역사,어학',
+  J59:'강사,교사,교육,직업훈련,교수,훈련교사,교원,교수자,학원강사',
+  J60:'교육기획,교수설계,교육콘텐츠,커리큘럼,교육과정개발,러닝디자인,인스트럭셔널디자이너',
+  J61:'조사,사회과학,사회조사,통계,설문조사,사회연구,연구원',
+  J62:'상담,진로,진로상담,직업상담,고용서비스,커리어컨설턴트,상담사,취업지원,커리어코치,취업컨설턴트,심리상담',
+  J63:'사회복지,사회복지사,보육,돌봄,요양보호사,복지사,지역사회,보육교사,아동복지',
+  J64:'의사,진료,의료진료,한의사,치과의사,의료인,전문의,의대',
+  J65:'약사,약무,약국,조제,병원약사',
+  J66:'간호,간호사,간호직,간호조무사',
+  J67:'임상병리,방사선사,임상검사,영상의학,의료기사,의료기술,임상병리사',
+  J68:'재활,치료,물리치료,작업치료,물리치료사,작업치료사,언어치료,재활치료',
+  J69:'보건,건강증진,보건직,보건소,의료행정,보건행정,원무,원무과,병원행정',
+  J70:'건축설계,도시계획,조경,건축사,건축가,도시설계,조경설계,건축',
+  J71:'토목,측량,공간정보,GIS,토목설계,지적,측량사',
+  J72:'시공,공사관리,현장관리,건설현장,현장소장,건축시공,공무,공사',
+  J73:'플랜트,건축설비,설비설계,기계설비,MEP,공조,배관',
+  J74:'시설관리,유지보수,건물관리,FM,시설팀,빌딩관리,시설관리자',
+  J75:'환경,기후,환경관리,환경공학,탄소,ESG,환경기사,기후변화',
+  J76:'에너지,전력,전기기사,전력설비,발전소,전기직,에너지관리',
+  J77:'안전,산업안전,건설안전,안전보건,안전관리자,보건관리자,중대재해,안전기사',
+  J78:'부동산,부동산개발,부동산투자,감정평가,감정평가사,중개,공인중개사',
+  J79:'호텔,숙박,호텔리어,프론트,리조트운영,숙박업,객실',
+  J80:'여행,관광,MICE,여행사,투어,여행기획,관광가이드,컨벤션,여행상품',
+  J81:'외식,조리,요리,셰프,조리사,식음,바리스타,영양사',
+  J82:'스포츠,레저,생활체육,체육,트레이너,스포츠지도사,피트니스,운동처방',
+  J83:'뷰티,미용,미용사,헤어,네일,피부관리,메이크업,에스테틱,뷰티서비스',
+  J84:'승무원,객실승무원,파일럿,운항,항공운항,지상직,공항직,캐빈크루,조종사',
+  J85:'기관사,철도,역무,관제,철도운전,승무,열차,지하철',
+  J86:'선박,항해사,선박기관사,해운,선원,선박운항,해기사',
+  J87:'농업,원예,스마트팜,농부,귀농,농업기술,스마트농업,작물',
+  J88:'축산,동물,동물보건,수의,동물관리,동물보건사,사육,반려동물',
+  J89:'산림,임업,숲해설,산림기사,조림,산림공무원,숲',
+  J90:'수산,어업,양식,어부,수산업,수산물,해양수산',
+  J91:'RA,임상개발,임상시험,CRA,인허가,의약품인허가,CRC,임상,의료기기인허가,규제업무',
+  J92:'매니저,연예매니저,아티스트매니지먼트,A&R,기획사,엔터매니저,아티스트,매니지먼트',
+  J93:'모금,후원,후원개발,펀드레이징,펀드레이저,기부,발전기금',
+  J94:'컨설턴트,전략컨설팅,경영컨설팅,컨설팅,자문,어드바이저,맥킨지,컨설팅펌,경영컨설턴트',
+  J95:'딜러,카지노딜러,카지노,게임테이블'
+};
+function synNorm(s) { return String(s || '').toLowerCase().replace(/[\s·・\/\-_.,&()\[\]'"]+/g, ''); }
+const SYN_INDEX = {};
+function synList(kind, code) {
+  const key = kind + code;
+  if (!SYN_INDEX[key]) {
+    const raw = (kind === 'I' ? INDUSTRY_SYN : JOB_SYN)[code] || '';
+    SYN_INDEX[key] = raw.split(',').map(function (x) { return { t: x, n: synNorm(x) }; }).filter(function (x) { return x.n; });
+  }
+  return SYN_INDEX[key];
+}
+/* 질의 q와 맞는 동의어를 찾는다. 영문 약어는 완전 일치만, 한글은 부분 포함(질의가 2자 이상일 때)까지 허용 */
+function synMatch(kind, code, q) {
+  const nq = synNorm(q);
+  const list = synList(kind, code);
+  if (nq.length < 2) {  /* 1글자는 사전에 있는 한글 단어(칩·팹·숲)와 완전히 같을 때만 */
+    if (!nq || !/[가-힣]/.test(nq)) return '';
+    for (let k = 0; k < list.length; k++) if (list[k].n === nq) return list[k].t;
+    return '';
+  }
+  for (let k = 0; k < list.length; k++) {
+    const s = list[k], ascii = /^[a-z0-9]+$/.test(s.n);
+    if (s.n === nq) return s.t;
+    if (ascii || /^[a-z0-9]+$/.test(nq)) continue;
+    if (s.n.length >= 3 && s.n.indexOf(nq) !== -1) return s.t;
+    if (s.n.length >= 2 && nq.indexOf(s.n) !== -1 && nq.length <= s.n.length + 6) return s.t;
+  }
+  return '';
+}
+/* 0건일 때 쓰는 가까운 항목 찾기: 2글자 조각(bigram) 겹침 비율 */
+function bigrams(s) { const n = synNorm(s), o = {}; for (let i = 0; i < n.length - 1; i++) o[n.substr(i, 2)] = 1; return o; }
+function nearestItems(q, kind, limit) {
+  const gq = bigrams(q), keys = Object.keys(gq);
+  if (!keys.length) return [];
+  const rows = (kind === 'I' ? DB.industries : DB.jobs).map(function (x) {
+    const hay = bigrams(x.name + ' ' + (x.description || '') + ' ' + synList(kind, x.code).map(function (y) { return y.t; }).join(' '));
+    let m = 0; keys.forEach(function (g) { if (hay[g]) m++; });
+    return { c: x.code, n: x.name, sc: m / keys.length };
+  }).filter(function (r) { return r.sc >= 0.34; });
+  rows.sort(function (a, b) { return b.sc - a.sc; });
+  return rows.slice(0, limit || 3);
+}
+
+/* v1.8: 원하는 산업·직무가 없을 때 희망 분야 메모 → 기기에 저장 → (이용자가 누를 때만) 구글 드라이브로 전송 */
+const WISH_KEY = 'helpertom_wish_v1';
+const WISH_DRIVE_ACCOUNT = 'helper83@gmail.com';
+/* 선택: 구글 Apps Script 웹앱 URL을 넣으면 '드라이브로 보내기'가 시트에 바로 기록됩니다. 설정 방법은 docs/wish-drive-setup.md 참고. 비어 있으면 공유·파일 저장 방식으로 동작합니다. */
+const WISH_WEBHOOK_URL = '';
+const WISH_KIND_LABEL = { industry: '산업', job: '직무', both: '산업·직무' };
+function wishLoad() { const v = LS.get(WISH_KEY, []); return Array.isArray(v) ? v : []; }
+function wishSave(list) { LS.set(WISH_KEY, list.slice(0, 50)); }
+function wishNote(kind, q) {
+  const nm = kind === 'I' ? '산업' : '직무';
+  return '<div class="wish-cta"><span>원하는 ' + nm + '이(가) 없나요?</span> <button type="button" class="btn sm" data-wk="' + (kind === 'I' ? 'industry' : 'job') + '" data-wq="' + esc(String(q)) + '" onclick="openWish(this.dataset.wk,this.dataset.wq)">희망 분야 메모 남기기</button></div>';
+}
+function nearestHtml(q, kind) {
+  const near = nearestItems(q, kind, 3);
+  if (!near.length) return '';
+  return '<div class="wish-near"><small>혹시 이런 항목인가요? (가까운 항목 · 추정)</small><div class="search-results">' + near.map(function (r) {
+    return '<button type="button" class="hit" onclick="' + (kind === 'I' ? 'goIndustry' : 'goJob') + '(\'' + r.c + '\')">' + esc(r.c + ' ' + r.n) + '</button>';
+  }).join('') + '</div></div>';
+}
+function openWish(kind, q) {
+  const m = $('wishModal'); if (!m) return;
+  const near = nearestItems(q || '', kind === 'job' ? 'J' : 'I', 3).map(function (r) { return r.n; }).join(', ');
+  $('wishKind').value = kind || 'both';
+  $('wishField').value = q || '';
+  $('wishNear').value = near;
+  $('wishWhy').value = '';
+  $('wishQuery').value = q || '';
+  wishRender(); $('wishStatus').textContent = '';
+  m.classList.remove('hidden');
+  setTimeout(function () { try { $('wishField').focus(); } catch (e) { /* ignore */ } }, 30);
+}
+function closeWish() { const m = $('wishModal'); if (m) m.classList.add('hidden'); }
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeWish(); });
+function wishAdd() {
+  const field = $('wishField').value.trim();
+  if (!field) { $('wishStatus').textContent = '희망 분야를 한 줄이라도 적어 주세요.'; $('wishField').focus(); return false; }
+  const list = wishLoad();
+  list.unshift({ id: Date.now().toString(36), at: new Date().toISOString(), kind: $('wishKind').value, field: field.slice(0, 80),
+    why: $('wishWhy').value.trim().slice(0, 300), near: $('wishNear').value.trim().slice(0, 100), query: $('wishQuery').value.trim().slice(0, 60), sent: false });
+  wishSave(list); wishRender();
+  $('wishField').value = ''; $('wishWhy').value = '';
+  $('wishStatus').textContent = '메모를 이 기기에 저장했습니다. 아래 ‘드라이브로 보내기’를 누르면 전송됩니다.';
+  return true;
+}
+function wishDelete(id) { wishSave(wishLoad().filter(function (x) { return x.id !== id; })); wishRender(); }
+function wishRender() {
+  const list = wishLoad(), box = $('wishList');
+  if (!box) return;
+  $('wishCount').textContent = list.length;
+  box.innerHTML = list.length ? list.map(function (x) {
+    return '<li><b>' + esc(x.field) + '</b> <small>(' + esc(WISH_KIND_LABEL[x.kind] || '') + (x.sent ? ' · 전송함' : ' · 미전송') + ')</small>' +
+      (x.why ? '<div class="why">' + esc(x.why) + '</div>' : '') + (x.near ? '<div class="why">가까운 항목: ' + esc(x.near) + '</div>' : '') +
+      '<button type="button" class="btn ghost sm" aria-label="메모 삭제" onclick="wishDelete(\'' + x.id + '\')">삭제</button></li>';
+  }).join('') : '<li class="empty">저장된 메모가 없습니다.</li>';
+}
+function csvCell(v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }
+function wishCsv(list) {
+  const head = ['접수시각', '구분', '희망 분야', '하고 싶은 일·이유', '가까운 항목', '검색어'];
+  const rows = list.map(function (x) { return [x.at, WISH_KIND_LABEL[x.kind] || '', x.field, x.why, x.near, x.query].map(csvCell).join(','); });
+  return '﻿' + [head.map(csvCell).join(',')].concat(rows).join('\r\n');
+}
+function wishStamp() { const d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()); }
+function wishMarkSent() { wishSave(wishLoad().map(function (x) { x.sent = true; return x; })); wishRender(); }
+async function wishSend() {
+  if ($('wishField').value.trim()) { if (!wishAdd()) return; }
+  const list = wishLoad().filter(function (x) { return !x.sent; });
+  const st = $('wishStatus');
+  if (!list.length) { st.textContent = '보낼 새 메모가 없습니다. 먼저 희망 분야를 적어 주세요.'; return; }
+  const csv = wishCsv(list), name = '헬퍼탐_희망분야메모_' + wishStamp() + '.csv';
+  if (WISH_WEBHOOK_URL) {
+    try {
+      await fetch(WISH_WEBHOOK_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ app: 'helpertom-mini', items: list }) });
+      wishMarkSent(); st.textContent = list.length + '건 전송을 요청했습니다. (드라이브 시트에서 확인하세요)'; return;
+    } catch (e) { st.textContent = '직접 전송에 실패해 파일 방식으로 전환합니다.'; }
+  }
+  let file = null;
+  try { file = new File([csv], name, { type: 'text/csv' }); } catch (e) { file = null; }
+  if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+    try {
+      await navigator.share({ files: [file], title: name, text: '헬퍼탐 희망 분야 메모 — ' + WISH_DRIVE_ACCOUNT + ' 드라이브에 저장해 주세요' });
+      wishMarkSent(); st.textContent = '공유 창에서 ‘드라이브’를 선택해 ' + WISH_DRIVE_ACCOUNT + ' 계정에 저장하세요.'; return;
+    } catch (e) { if (e && e.name === 'AbortError') { st.textContent = '전송을 취소했습니다.'; return; } }
+  }
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  wishMarkSent();
+  st.innerHTML = '파일(' + esc(name) + ')을 저장했습니다. <a href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">구글 드라이브</a>에서 ' + esc(WISH_DRIVE_ACCOUNT) + ' 계정으로 업로드하거나, <button type="button" class="btn ghost sm" onclick="wishMail()">메일로 보내기</button>';
+}
+function wishMail() {
+  const list = wishLoad().slice(0, 10);
+  const body = list.map(function (x) { return '[' + (WISH_KIND_LABEL[x.kind] || '') + '] ' + x.field + (x.why ? ' / ' + x.why : '') + (x.near ? ' / 가까운 항목: ' + x.near : ''); }).join('\n');
+  location.href = 'mailto:' + WISH_DRIVE_ACCOUNT + '?subject=' + encodeURIComponent('[헬퍼탐] 희망 분야 메모') + '&body=' + encodeURIComponent(body.slice(0, 1500));
+}
+
 function searchIndustries(q) {
   q = String(q || '').trim().toLowerCase();
   const box = $('industrySearchResults');
@@ -1468,10 +1767,16 @@ function searchIndustries(q) {
     else if (co.length) hits.push({ c: i.code, n: i.name, w: 2, s: co.slice(0, 2).join(', ') });
     else if (hay.indexOf(q) !== -1) hits.push({ c: i.code, n: i.name, w: 1, s: '' });
   });
+  const haveI = {}; hits.forEach(function (x) { haveI[x.c] = 1; });
+  DB.industries.forEach(function (i) {
+    if (haveI[i.code]) return;
+    const t = synMatch('I', i.code, q);
+    if (t) hits.push({ c: i.code, n: i.name, w: 2.5, s: '관련어: ' + t });
+  });
   hits.sort(function (a, b) { return b.w - a.w; });
-  box.innerHTML = hits.length ? hits.slice(0, 12).map(function (h) {
+  box.innerHTML = (hits.length ? hits.slice(0, 12).map(function (h) {
     return '<button type="button" class="hit" onclick="goIndustry(\'' + h.c + '\')">' + esc(h.c + ' ' + h.n) + (h.s ? '<small>' + esc(h.s) + '</small>' : '') + '</button>';
-  }).join('') : '<span class="empty">일치하는 산업이 없습니다. 더 짧은 단어(예: ‘바이오’, ‘물류’)로 검색해 보세요.</span>';
+  }).join('') : '<span class="empty">일치하는 산업이 없습니다. 더 짧은 단어(예: ‘바이오’, ‘물류’)로 검색해 보세요.</span>' + nearestHtml(q, 'I')) + wishNote('I', q);
 }
 function goIndustry(code) {
   const ind = INDUSTRY_BY[code];
@@ -1789,10 +2094,16 @@ function searchJobs(q) {
     else if (m.length) hits.push({ c: j.code, w: 2, s: m.slice(0, 2).join(', ') });
     else if ([j.description, splitList(job.majorTasks).join(' '), splitList(job.tools).join(' ')].join(' ').toLowerCase().indexOf(q) !== -1) hits.push({ c: j.code, w: 1, s: '' });
   });
+  const haveJ = {}; hits.forEach(function (x) { haveJ[x.c] = 1; });
+  DB.jobs.forEach(function (j) {
+    if (haveJ[j.code]) return;
+    const t = synMatch('J', j.code, q);
+    if (t) hits.push({ c: j.code, w: 2.5, s: '관련어: ' + t });
+  });
   hits.sort(function (a, b) { return b.w - a.w; });
-  box.innerHTML = hits.length ? hits.slice(0, 12).map(function (h) {
+  box.innerHTML = (hits.length ? hits.slice(0, 12).map(function (h) {
     return '<button type="button" class="hit" onclick="goJob(\'' + h.c + '\')">' + esc(h.c + ' ' + JOB_BY[h.c].name) + (h.s ? '<small>' + esc(h.s) + '</small>' : '') + '</button>';
-  }).join('') : '<span class="empty">일치하는 직무가 없습니다. ‘기획’, ‘영업’, ‘개발’처럼 짧게 검색해 보세요.</span>';
+  }).join('') : '<span class="empty">일치하는 직무가 없습니다. ‘기획’, ‘영업’, ‘개발’처럼 짧게 검색해 보세요.</span>' + nearestHtml(q, 'J')) + wishNote('J', q);
 }
 function openCompanyDetail(detailId, roleIdx) {
   const details = document.getElementById(detailId);
@@ -3048,5 +3359,27 @@ else initializeApp();
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 <script>if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+<div id="wishModal" class="wish-modal hidden" role="dialog" aria-modal="true" aria-labelledby="wishTitle">
+  <div class="wish-card">
+    <div class="wish-head"><h2 id="wishTitle">희망 분야 메모</h2><button type="button" class="btn ghost sm" onclick="closeWish()" aria-label="닫기">닫기 ✕</button></div>
+    <p class="wish-note">목록에 없는 산업·직무를 적어 두면 상담 때 함께 확인하고 다음 버전에 반영합니다. <b>이름·연락처 등 개인정보는 적지 마세요.</b></p>
+    <label class="label" for="wishKind">구분</label>
+    <select id="wishKind"><option value="industry">산업</option><option value="job">직무</option><option value="both">산업·직무 모두</option></select>
+    <label class="label" for="wishField">희망 분야 (필수)</label>
+    <input id="wishField" type="text" maxlength="80" placeholder="예: 펫테크, 탄소배출권 거래, 웹툰 PD" autocomplete="off">
+    <label class="label" for="wishWhy">하고 싶은 일·이유 (선택)</label>
+    <textarea id="wishWhy" rows="2" maxlength="300" placeholder="예: 반려동물 관련 서비스 기획을 하고 싶음"></textarea>
+    <label class="label" for="wishNear">가장 가까운 항목 (자동 제안 · 수정 가능)</label>
+    <input id="wishNear" type="text" maxlength="100" autocomplete="off">
+    <input id="wishQuery" type="hidden">
+    <div class="btn-row">
+      <button type="button" class="btn" onclick="wishAdd()">메모 저장</button>
+      <button type="button" class="btn primary" onclick="wishSend()">드라이브로 보내기</button>
+    </div>
+    <div id="wishStatus" class="wish-status" aria-live="polite"></div>
+    <div class="wish-saved"><b>저장된 메모 <span id="wishCount">0</span>건</b> <small>(이 기기에만 저장됨)</small></div>
+    <ul id="wishList" class="wish-list"></ul>
+  </div>
+</div>
 </body>
 </html>
