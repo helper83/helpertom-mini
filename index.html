@@ -262,8 +262,6 @@ select:focus,input:focus{outline:none;border-color:#7db6e2;box-shadow:0 0 0 3px 
 .wish-note{font-size:13px;color:var(--muted);margin:8px 0}
 .wish-card input[type=text],.wish-card select,.wish-card textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:var(--r-md);padding:8px 10px;font:inherit;font-size:14px;background:var(--surface);color:var(--ink);margin-bottom:6px}
 .wish-status{font-size:13px;margin-top:10px;min-height:18px}
-.wish-saved{margin-top:14px;font-size:13px}.wish-list{list-style:none;padding:0;margin:6px 0 0}
-.wish-list li{border-top:1px solid var(--line);padding:8px 0;font-size:13px}.wish-list .why{color:var(--muted);margin-top:2px}.wish-list .empty{color:var(--muted)}
 .hit:hover{border-color:var(--primary);background:var(--tint)}
 .hit small{color:var(--muted);margin-left:4px}
 
@@ -1656,17 +1654,14 @@ function nearestItems(q, kind, limit) {
   return rows.slice(0, limit || 3);
 }
 
-/* v1.8: 원하는 산업·직무가 없을 때 희망 분야 메모 → 기기에 저장 → (이용자가 누를 때만) 구글 드라이브로 전송 */
-const WISH_KEY = 'helpertom_wish_v1';
+/* v1.8: 원하는 산업·직무가 없을 때 ‘의견 보내기’ — 이용자가 보내기를 누를 때만 구글 드라이브로 전송(기기에 저장하지 않음) */
 const WISH_DRIVE_ACCOUNT = 'helper83@gmail.com';
 /* 선택: 구글 Apps Script 웹앱 URL을 넣으면 '드라이브로 보내기'가 시트에 바로 기록됩니다. 설정 방법은 docs/wish-drive-setup.md 참고. 비어 있으면 공유·파일 저장 방식으로 동작합니다. */
 const WISH_WEBHOOK_URL = '';
 const WISH_KIND_LABEL = { industry: '산업', job: '직무', both: '산업·직무' };
-function wishLoad() { const v = LS.get(WISH_KEY, []); return Array.isArray(v) ? v : []; }
-function wishSave(list) { LS.set(WISH_KEY, list.slice(0, 50)); }
 function wishNote(kind, q) {
   const nm = kind === 'I' ? '산업' : '직무';
-  return '<div class="wish-cta"><span>원하는 ' + nm + '이(가) 없나요?</span> <button type="button" class="btn sm" data-wk="' + (kind === 'I' ? 'industry' : 'job') + '" data-wq="' + esc(String(q)) + '" onclick="openWish(this.dataset.wk,this.dataset.wq)">희망 분야 메모 남기기</button></div>';
+  return '<div class="wish-cta"><span>원하는 ' + nm + '이(가) 없나요?</span> <button type="button" class="btn sm" data-wk="' + (kind === 'I' ? 'industry' : 'job') + '" data-wq="' + esc(String(q)) + '" onclick="openWish(this.dataset.wk,this.dataset.wq)">의견 보내기</button></div>';
 }
 function nearestHtml(q, kind) {
   const near = nearestItems(q, kind, 3);
@@ -1683,34 +1678,12 @@ function openWish(kind, q) {
   $('wishNear').value = near;
   $('wishWhy').value = '';
   $('wishQuery').value = q || '';
-  wishRender(); $('wishStatus').textContent = '';
+  $('wishStatus').textContent = '';
   m.classList.remove('hidden');
   setTimeout(function () { try { $('wishField').focus(); } catch (e) { /* ignore */ } }, 30);
 }
 function closeWish() { const m = $('wishModal'); if (m) m.classList.add('hidden'); }
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeWish(); });
-function wishAdd() {
-  const field = $('wishField').value.trim();
-  if (!field) { $('wishStatus').textContent = '희망 분야를 한 줄이라도 적어 주세요.'; $('wishField').focus(); return false; }
-  const list = wishLoad();
-  list.unshift({ id: Date.now().toString(36), at: new Date().toISOString(), kind: $('wishKind').value, field: field.slice(0, 80),
-    why: $('wishWhy').value.trim().slice(0, 300), near: $('wishNear').value.trim().slice(0, 100), query: $('wishQuery').value.trim().slice(0, 60), sent: false });
-  wishSave(list); wishRender();
-  $('wishField').value = ''; $('wishWhy').value = '';
-  $('wishStatus').textContent = '메모를 이 기기에 저장했습니다. 아래 ‘드라이브로 보내기’를 누르면 전송됩니다.';
-  return true;
-}
-function wishDelete(id) { wishSave(wishLoad().filter(function (x) { return x.id !== id; })); wishRender(); }
-function wishRender() {
-  const list = wishLoad(), box = $('wishList');
-  if (!box) return;
-  $('wishCount').textContent = list.length;
-  box.innerHTML = list.length ? list.map(function (x) {
-    return '<li><b>' + esc(x.field) + '</b> <small>(' + esc(WISH_KIND_LABEL[x.kind] || '') + (x.sent ? ' · 전송함' : ' · 미전송') + ')</small>' +
-      (x.why ? '<div class="why">' + esc(x.why) + '</div>' : '') + (x.near ? '<div class="why">가까운 항목: ' + esc(x.near) + '</div>' : '') +
-      '<button type="button" class="btn ghost sm" aria-label="메모 삭제" onclick="wishDelete(\'' + x.id + '\')">삭제</button></li>';
-  }).join('') : '<li class="empty">저장된 메모가 없습니다.</li>';
-}
 function csvCell(v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }
 function wishCsv(list) {
   const head = ['접수시각', '구분', '희망 분야', '하고 싶은 일·이유', '가까운 항목', '검색어'];
@@ -1718,37 +1691,45 @@ function wishCsv(list) {
   return '﻿' + [head.map(csvCell).join(',')].concat(rows).join('\r\n');
 }
 function wishStamp() { const d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()); }
-function wishMarkSent() { wishSave(wishLoad().map(function (x) { x.sent = true; return x; })); wishRender(); }
+function wishItem() {
+  const field = $('wishField').value.trim();
+  if (!field) return null;
+  return { at: new Date().toISOString(), kind: $('wishKind').value, field: field.slice(0, 80),
+    why: $('wishWhy').value.trim().slice(0, 300), near: $('wishNear').value.trim().slice(0, 100), query: $('wishQuery').value.trim().slice(0, 60) };
+}
+function wishDone(msg) { $('wishField').value = ''; $('wishWhy').value = ''; $('wishStatus').innerHTML = msg; }
 async function wishSend() {
-  if ($('wishField').value.trim()) { if (!wishAdd()) return; }
-  const list = wishLoad().filter(function (x) { return !x.sent; });
   const st = $('wishStatus');
-  if (!list.length) { st.textContent = '보낼 새 메모가 없습니다. 먼저 희망 분야를 적어 주세요.'; return; }
+  const it = wishItem();
+  if (!it) { st.textContent = '의견(희망 분야)을 한 줄이라도 적어 주세요.'; $('wishField').focus(); return; }
+  const list = [it];
+  WISH_LAST = list;
   const csv = wishCsv(list), name = '헬퍼탐_희망분야메모_' + wishStamp() + '.csv';
   if (WISH_WEBHOOK_URL) {
     try {
       await fetch(WISH_WEBHOOK_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ app: 'helpertom-mini', items: list }) });
-      wishMarkSent(); st.textContent = list.length + '건 전송을 요청했습니다. (드라이브 시트에서 확인하세요)'; return;
+      wishDone('의견을 보냈습니다. 감사합니다.'); return;
     } catch (e) { st.textContent = '직접 전송에 실패해 파일 방식으로 전환합니다.'; }
   }
   let file = null;
   try { file = new File([csv], name, { type: 'text/csv' }); } catch (e) { file = null; }
   if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
     try {
-      await navigator.share({ files: [file], title: name, text: '헬퍼탐 희망 분야 메모 — ' + WISH_DRIVE_ACCOUNT + ' 드라이브에 저장해 주세요' });
-      wishMarkSent(); st.textContent = '공유 창에서 ‘드라이브’를 선택해 ' + WISH_DRIVE_ACCOUNT + ' 계정에 저장하세요.'; return;
+      await navigator.share({ files: [file], title: name, text: '헬퍼탐 의견 — ' + WISH_DRIVE_ACCOUNT + ' 드라이브에 저장해 주세요' });
+      wishDone('공유 창에서 ‘드라이브’를 선택해 ' + esc(WISH_DRIVE_ACCOUNT) + ' 계정에 저장하면 전달이 완료됩니다.'); return;
     } catch (e) { if (e && e.name === 'AbortError') { st.textContent = '전송을 취소했습니다.'; return; } }
   }
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-  wishMarkSent();
   st.innerHTML = '파일(' + esc(name) + ')을 저장했습니다. <a href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">구글 드라이브</a>에서 ' + esc(WISH_DRIVE_ACCOUNT) + ' 계정으로 업로드하거나, <button type="button" class="btn ghost sm" onclick="wishMail()">메일로 보내기</button>';
+  $('wishField').value = ''; $('wishWhy').value = '';
 }
+let WISH_LAST = [];
 function wishMail() {
-  const list = wishLoad().slice(0, 10);
+  const list = WISH_LAST;
   const body = list.map(function (x) { return '[' + (WISH_KIND_LABEL[x.kind] || '') + '] ' + x.field + (x.why ? ' / ' + x.why : '') + (x.near ? ' / 가까운 항목: ' + x.near : ''); }).join('\n');
-  location.href = 'mailto:' + WISH_DRIVE_ACCOUNT + '?subject=' + encodeURIComponent('[헬퍼탐] 희망 분야 메모') + '&body=' + encodeURIComponent(body.slice(0, 1500));
+  location.href = 'mailto:' + WISH_DRIVE_ACCOUNT + '?subject=' + encodeURIComponent('[헬퍼탐] 의견') + '&body=' + encodeURIComponent(body.slice(0, 1500));
 }
 
 function searchIndustries(q) {
@@ -3361,11 +3342,11 @@ else initializeApp();
 <script>if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 <div id="wishModal" class="wish-modal hidden" role="dialog" aria-modal="true" aria-labelledby="wishTitle">
   <div class="wish-card">
-    <div class="wish-head"><h2 id="wishTitle">희망 분야 메모</h2><button type="button" class="btn ghost sm" onclick="closeWish()" aria-label="닫기">닫기 ✕</button></div>
-    <p class="wish-note">목록에 없는 산업·직무를 적어 두면 상담 때 함께 확인하고 다음 버전에 반영합니다. <b>이름·연락처 등 개인정보는 적지 마세요.</b></p>
+    <div class="wish-head"><h2 id="wishTitle">의견 보내기</h2><button type="button" class="btn ghost sm" onclick="closeWish()" aria-label="닫기">닫기 ✕</button></div>
+    <p class="wish-note">목록에 없는 산업·직무나 앱에 바라는 점을 보내 주시면 확인 후 다음 버전에 반영합니다. <b>이름·연락처 등 개인정보는 적지 마세요.</b></p>
     <label class="label" for="wishKind">구분</label>
     <select id="wishKind"><option value="industry">산업</option><option value="job">직무</option><option value="both">산업·직무 모두</option></select>
-    <label class="label" for="wishField">희망 분야 (필수)</label>
+    <label class="label" for="wishField">희망 분야·의견 (필수)</label>
     <input id="wishField" type="text" maxlength="80" placeholder="예: 펫테크, 탄소배출권 거래, 웹툰 PD" autocomplete="off">
     <label class="label" for="wishWhy">하고 싶은 일·이유 (선택)</label>
     <textarea id="wishWhy" rows="2" maxlength="300" placeholder="예: 반려동물 관련 서비스 기획을 하고 싶음"></textarea>
@@ -3373,12 +3354,9 @@ else initializeApp();
     <input id="wishNear" type="text" maxlength="100" autocomplete="off">
     <input id="wishQuery" type="hidden">
     <div class="btn-row">
-      <button type="button" class="btn" onclick="wishAdd()">메모 저장</button>
-      <button type="button" class="btn primary" onclick="wishSend()">드라이브로 보내기</button>
+      <button type="button" class="btn primary" onclick="wishSend()">의견 보내기</button>
     </div>
     <div id="wishStatus" class="wish-status" aria-live="polite"></div>
-    <div class="wish-saved"><b>저장된 메모 <span id="wishCount">0</span>건</b> <small>(이 기기에만 저장됨)</small></div>
-    <ul id="wishList" class="wish-list"></ul>
   </div>
 </div>
 </body>

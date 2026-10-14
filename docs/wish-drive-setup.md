@@ -1,10 +1,9 @@
-# 희망 분야 메모 → 구글 드라이브 전송 (v1.8)
+# 의견 보내기 → 구글 드라이브 전송 (v1.8)
 
 ## 기본 동작 (설정 불필요)
-- 검색 결과에서 `희망 분야 메모 남기기` → 메모 저장(이 기기 localStorage).
-- `드라이브로 보내기` 우선순위: ① 휴대폰/지원 브라우저: 공유 창에서 **드라이브** 선택 → helper83@gmail.com 계정에 CSV 저장
+- 검색 결과의 `의견 보내기` → 내용 입력 → `의견 보내기` 버튼. 기기에는 저장하지 않습니다.
+- 전송 우선순위: ① 휴대폰/지원 브라우저: 공유 창에서 **드라이브** 선택 → helper83@gmail.com 계정에 CSV 저장
   ② 미지원(PC 등): CSV 파일 다운로드 + 구글 드라이브 업로드 안내 + 메일 보내기 버튼.
-- 이미 보낸 메모는 `전송함`으로 표시되어 중복 전송되지 않음.
 
 ## 선택: 시트에 자동 기록 (Apps Script, 1회 설정)
 브라우저 앱은 구글 계정 로그인 없이 드라이브에 직접 쓸 수 없으므로, 아래 웹앱을 만들면 버튼 한 번으로 시트에 쌓입니다.
@@ -20,7 +19,7 @@ function doPost(e) {
   if (d.app !== 'helpertom-mini' || !Array.isArray(d.items)) return ContentService.createTextOutput('bad');
   const sh = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
   if (sh.getLastRow() === 0) sh.appendRow(['접수시각','구분','희망 분야','하고 싶은 일·이유','가까운 항목','검색어']);
-  d.items.slice(0, 50).forEach(function (x) {
+  d.items.slice(0, 5).forEach(function (x) {
     sh.appendRow([x.at, x.kind, String(x.field).slice(0,80), String(x.why||'').slice(0,300), String(x.near||'').slice(0,100), String(x.query||'').slice(0,60)]);
   });
   return ContentService.createTextOutput('ok');
