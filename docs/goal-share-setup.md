@@ -11,33 +11,47 @@
 4. 첫 제출 때 드라이브에 `헬퍼손 진로 결정 수업 나눔` 슬라이드가 자동 생성됩니다. 공유(링크 보기)해서 수업 화면에 띄우세요.
 
 ```js
+function doGet() { return ContentService.createTextOutput('ok: 진로 결정 수업 나눔 스크립트 작동 중'); }
+
+function testGoal() {  // 편집기에서 이 함수를 선택해 ▶ 실행 → 권한 승인 + 오류 확인용
+  Logger.log(doPost({ parameter: { kind: 'goal', nick: '시험', ind: '시험 산업', job: '시험 직무', pub: '', link: '직접 연결', whyInd: '시험 이유1', whyJob: '시험 이유2', whyPub: '' } }).getContent());
+}
+
 function doPost(e) {
-  var p = e.parameter || {};
-  if (p.kind !== 'goal') return ContentService.createTextOutput('bad');
-  var c = function (k, n) { return String(p[k] || '').replace(/[\r\n]+/g, ' ').slice(0, n); };
-  var nick = c('nick', 12); if (!nick || !c('ind', 80) || !c('job', 80)) return ContentService.createTextOutput('bad');
-  var lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
-    var props = PropertiesService.getScriptProperties(), id = props.getProperty('DECK'), deck;
-    if (id) { try { deck = SlidesApp.openById(id); } catch (x) { deck = null; } }
-    if (!deck) { deck = SlidesApp.create('헬퍼손 진로 결정 수업 나눔'); props.setProperty('DECK', deck.getId());
-      deck.getSlides().forEach(function (s) { s.remove(); }); }
-    deck.getSlides().forEach(function (s) { if (s.getNotesPage().getSpeakerNotesShape().getText().asString().trim() === 'GOAL:' + nick) s.remove(); });
-    var s = deck.appendSlide(SlidesApp.PredefinedLayout.BLANK);
-    s.getNotesPage().getSpeakerNotesShape().getText().setText('GOAL:' + nick);
-    var W = deck.getPageWidth(), t = s.insertTextBox('🎯 ' + nick, 40, 24, W - 80, 56);
-    t.getText().getTextStyle().setFontSize(30).setBold(true).setForegroundColor('#1E5FA8');
-    var rows = [['목표 산업', c('ind', 80), c('whyInd', 80)], ['목표 직무', c('job', 80), c('whyJob', 80)]];
-    if (c('pub', 80)) rows.push(['목표 공공기관', c('pub', 80), c('whyPub', 80)]);
-    var tb = s.insertTable(rows.length + 1, 3, 40, 100, W - 80, 40 * (rows.length + 1));
-    ['구분', '선택', '고른 이유'].forEach(function (h, i) { tb.getCell(0, i).getText().setText(h).getTextStyle().setBold(true).setFontSize(16); });
-    rows.forEach(function (r, ri) { r.forEach(function (v, ci) { tb.getCell(ri + 1, ci).getText().setText(v || '-').getTextStyle().setFontSize(18); }); });
-    var l = s.insertTextBox('산업-직무 연결: ' + (c('link', 20) || '-'), 40, 100 + 52 * (rows.length + 1) + 20, W - 80, 36);
-    l.getText().getTextStyle().setFontSize(16).setForegroundColor('#555555');
-  } finally { lock.releaseLock(); }
-  return ContentService.createTextOutput('ok');
+    var p = (e && e.parameter) || {};
+    if (p.kind !== 'goal') return ContentService.createTextOutput('bad');
+    var c = function (k, n) { return String(p[k] || '').replace(/[\r\n]+/g, ' ').slice(0, n); };
+    var nick = c('nick', 12); if (!nick || !c('ind', 80) || !c('job', 80)) return ContentService.createTextOutput('bad');
+    var lock = LockService.getScriptLock(); lock.waitLock(20000);
+    try {
+      var props = PropertiesService.getScriptProperties(), id = props.getProperty('DECK'), deck = null;
+      if (id) { try { deck = SlidesApp.openById(id); } catch (x) { deck = null; } }
+      if (!deck) { deck = SlidesApp.create('헬퍼손 진로 결정 수업 나눔'); props.setProperty('DECK', deck.getId()); }
+      deck.getSlides().forEach(function (x) { if (x.getNotesPage().getSpeakerNotesShape().getText().asString().trim() === 'GOAL:' + nick) x.remove(); });
+      var s = deck.appendSlide(SlidesApp.PredefinedLayout.BLANK);
+      s.getNotesPage().getSpeakerNotesShape().getText().setText('GOAL:' + nick);
+      deck.getSlides().forEach(function (x) { if (x.getObjectId() !== s.getObjectId() && x.getPageElements().length === 0 && x.getNotesPage().getSpeakerNotesShape().getText().asString().trim() === '') x.remove(); });
+      var W = deck.getPageWidth(), t = s.insertTextBox('🎯 ' + nick, 40, 24, W - 80, 56);
+      t.getText().getTextStyle().setFontSize(30).setBold(true).setForegroundColor('#1E5FA8');
+      var rows = [['목표 산업', c('ind', 80), c('whyInd', 80)], ['목표 직무', c('job', 80), c('whyJob', 80)]];
+      if (c('pub', 80)) rows.push(['목표 공공기관', c('pub', 80), c('whyPub', 80)]);
+      var tb = s.insertTable(rows.length + 1, 3, 40, 100, W - 80, 40 * (rows.length + 1));
+      ['구분', '선택', '고른 이유'].forEach(function (h, i) { tb.getCell(0, i).getText().setText(h).getTextStyle().setBold(true).setFontSize(16); });
+      rows.forEach(function (r, ri) { r.forEach(function (v, ci) { tb.getCell(ri + 1, ci).getText().setText(v || '-').getTextStyle().setFontSize(18); }); });
+      var l = s.insertTextBox('산업-직무 연결: ' + (c('link', 20) || '-'), 40, 100 + 52 * (rows.length + 1) + 20, W - 80, 36);
+      l.getText().getTextStyle().setFontSize(16).setForegroundColor('#555555');
+      deck.saveAndClose();
+    } finally { lock.releaseLock(); }
+    return ContentService.createTextOutput('ok');
+  } catch (err) { console.error(err); return ContentService.createTextOutput('error: ' + err); }
 }
 ```
+
+## 안 될 때 (진단)
+1. Apps Script 편집기에서 함수 `testGoal`을 선택하고 ▶ 실행 → 권한 승인(고급 → 이동) → 드라이브에 슬라이드가 생기는지 확인. 오류는 실행 로그에 표시됩니다.
+2. 브라우저에서 웹 앱 URL(…/exec)을 열어 `ok: …`가 보이면 배포는 정상입니다.
+3. 코드를 고친 뒤에는 배포 → 배포 관리 → 연필 → 버전 "새 버전" → 배포를 해야 반영됩니다.
 
 ## 유의
 - 브라우저는 no-cors로 보내 성공 여부를 알 수 없습니다. 슬라이드에서 직접 확인하세요.
