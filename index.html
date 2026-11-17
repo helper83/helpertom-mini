@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- v1.1 (2026-10-07): 로고 색상을 로열블루 그라데이션 + 금빛 포인트로 변경 -->
+<!-- v1.4 (2026-11-18): 헬퍼탐 v12.225~230 반영 — AI 시대 업무 지도(직무별 AI 활용·함께·지시·책임, data/ai/roles.js), 직무·산업을 보면 1단계 자동 접기·펴기. -->
 <!-- v1.3 (2026-11-17): 앱 품질 점검 수정 — 주차 완료 체크·완료 기준 체크·접기 헤더·바로가기 링크·작은 버튼 터치 영역 44px 보정, sw.js v18 -->
 <!-- v1.2 (2026-11-17): 헬퍼탐 v12.218~219 반영 — 학과 탐색 추천 다양화('넓혀 보기' 목록), 진로 결정 단계 체크포인트 표시 + 졸업 단계 경력 전환·재취업 트랙·일경험 문구. 학년 단계는 1~4학년·졸업 유지, 중·고등학생 내용 미포함, sw.js v17 -->
 <!-- 헬퍼손 산업직무(구 헬퍼탐 미니) v1.0 (2026-10-07): v12.111 기반 — 산업 탐색·직무 탐색·진로 결정·진로 로드맵 4개 탭만 유지(홈·공공기관·진단·구글 시트 전송 제거) -->
@@ -272,6 +273,12 @@ select:focus,input:focus{outline:none;border-color:#7db6e2;box-shadow:0 0 0 3px 
 
 /* ---------- step blocks & cards ---------- */
 .step{margin-top:18px}
+.ai-role .ai-rows{display:grid;gap:6px;margin-top:6px;font-size:13px}.ai-rows>div{display:flex;gap:8px;align-items:flex-start}
+.zc{flex:none;width:62px;text-align:center;padding:2px 0;border-radius:6px;font-size:12px;line-height:1.5}
+.zA{background:#E3F0FB;color:#145A92}.zB{background:#FFF1D6;color:#7A4F00}.zC{background:#DFF3E6;color:#1E6B3F}
+.ai-bar{display:flex;height:24px;border-radius:6px;overflow:hidden;font-size:12px;line-height:24px;text-align:center}
+.step.folded>.grid{display:none}
+@media print{.ai-role>summary,#jobGroupStep,#industryGroupStep{display:none}}
 .step-title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin-bottom:10px;flex-wrap:wrap}
 .num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;flex:0 0 auto}
 .grid{display:grid;gap:10px}
@@ -947,8 +954,8 @@ select,input[type=number],input[type=search],input[type=text],textarea{font-size
       </div>
       <div id="industrySearchResults" class="search-results" aria-live="polite"></div>
 
-      <div class="step">
-        <div class="step-title"><span class="num">1</span><span class="js-ind-groups">10</span>개 산업 생태계 고르기</div>
+      <div class="step" id="industryGroupStep">
+        <div class="step-title"><span class="num">1</span><span class="js-ind-groups">10</span>개 산업 생태계 고르기 <button class="btn ghost" type="button" id="industryGroupToggle" aria-expanded="true" aria-controls="industryGroupGrid" onclick="toggleIndustryGroupFold()">접기</button></div>
         <div id="industryGroupGrid" class="grid g3"></div>
       </div>
       <div id="industryCrumb" class="crumb hidden"></div>
@@ -1040,8 +1047,8 @@ select,input[type=number],input[type=search],input[type=text],textarea{font-size
         <input id="jobSearch" type="search" placeholder="예: 경영기획, HR, MD, QA/QC, 백엔드, 데이터·AI" autocomplete="off" oninput="searchJobs(this.value)">
       </div>
       <div id="jobSearchResults" class="search-results" aria-live="polite"></div>
-      <div class="step">
-        <div class="step-title"><span class="num">1</span><span class="js-job-groups">21</span>개 직무대영역 고르기</div>
+      <div class="step" id="jobGroupStep">
+        <div class="step-title"><span class="num">1</span><span class="js-job-groups">21</span>개 직무대영역 고르기 <button class="btn ghost" type="button" id="jobGroupToggle" aria-expanded="true" aria-controls="jobGroupGrid" onclick="toggleJobGroupFold()">접기</button></div>
         <div id="jobGroupGrid" class="grid g3"></div>
       </div>
       <div id="jobCrumb" class="crumb hidden"></div>
@@ -1440,6 +1447,55 @@ function employeesNum(v) { const n = Number(String(v || '').replace(/[^0-9.]/g, 
 /* ---------- 분류 메타 ---------- */
 const INDUSTRY_GROUP_META = [{"key":"자원·소재·환경","stage":"먹거리·원료·소재를 만들고 자원을 순환시키는 산업","name":"자원·소재·환경","description":"60개 산업 중 4개 산업이 포함된 생태계","reps":["대동","포스코","LG화학"]},{"key":"에너지·배터리","stage":"전기·가스·신재생에너지와 배터리를 만드는 산업","name":"에너지·배터리","description":"60개 산업 중 3개 산업이 포함된 생태계","reps":["한국전력","한화솔루션","LG에너지솔루션"]},{"key":"반도체·전자부품·통신","stage":"전자제품과 통신을 움직이는 부품·장비를 만드는 산업","name":"반도체·전자부품·통신","description":"60개 산업 중 4개 산업이 포함된 생태계","reps":["삼성전자 DS","삼성디스플레이","LG이노텍"]},{"key":"제조·건설·부동산","stage":"완제품·기계·선박을 만들고 건물·시설을 짓고 부동산을 개발·관리하는 산업","name":"제조·건설·부동산","description":"60개 산업 중 9개 산업이 포함된 생태계","reps":["삼성전자 DX","현대자동차","HD현대인프라코어"]},{"key":"무역·물류·유통","stage":"물건을 사고팔고 옮기고 판매하는 산업","name":"무역·물류·유통","description":"60개 산업 중 6개 산업이 포함된 생태계","reps":["포스코인터내셔널","CJ대한통운","HMM"]},{"key":"소비재·생활서비스","stage":"먹고 입고 쓰는 제품과 여가·외식 서비스를 만드는 산업","name":"소비재·생활서비스","description":"60개 산업 중 9개 산업이 포함된 생태계","reps":["CJ제일제당","아모레퍼시픽","호텔신라"]},{"key":"제약·바이오·헬스케어","stage":"의약품·바이오·의료기기를 만들고 진료·건강 서비스를 제공하는 산업","name":"제약·바이오·헬스케어","description":"60개 산업 중 4개 산업이 포함된 생태계","reps":["삼성바이오로직스","유한양행","서울아산병원"]},{"key":"금융·보험·핀테크","stage":"돈을 맡기고 빌려주고 투자·보장하는 산업","name":"금융·보험·핀테크","description":"60개 산업 중 4개 산업이 포함된 생태계","reps":["KB국민은행","미래에셋증권","삼성생명"]},{"key":"미디어·교육·전문서비스","stage":"콘텐츠·교육·복지·전문 지식을 서비스로 제공하는 산업","name":"미디어·교육·전문서비스","description":"60개 산업 중 8개 산업이 포함된 생태계","reps":["제일기획","HYBE","메가스터디교육"]},{"key":"IT·소프트웨어·플랫폼","stage":"모든 산업에서 쓰는 디지털 기술·서비스","name":"IT·소프트웨어·플랫폼","description":"60개 산업 중 6개 산업이 포함된 생태계","reps":["네이버클라우드","더존비즈온","삼성SDS"]},{"key":"공공·교육·문화기반","stage":"공공행정·학교·박물관·도서관처럼 사회의 기반 서비스를 운영하는 산업","name":"공공·교육·문화기반","description":"60개 산업 중 3개 산업이 포함된 생태계","reps":["경찰청","경기도교육청","국립중앙박물관"]}];
 const JOB_GROUP_META = [{"no":"01","name":"전략·기획·사업관리","summary":"경영기획·전략기획 / 사업개발·신사업기획 / 사업관리·프로젝트관리 / 제품·서비스기획 / 전략컨설팅·자문","codes":["J01","J02","J03","J04","J94"]},{"no":"02","name":"인사·조직·경영지원","summary":"인사(HRM)·채용·노무 / HRD·조직개발·조직문화 / 총무·사무행정·비서","codes":["J05","J06","J07"]},{"no":"03","name":"재무·회계","summary":"재무기획·관리회계 / 회계·세무 / 자금·IR·공시","codes":["J08","J09","J10"]},{"no":"04","name":"금융·보험","summary":"은행·여신·금융영업 / 증권·투자·자산운용 / 보험·보험심사·금융리스크","codes":["J11","J12","J13"]},{"no":"05","name":"법무·공공행정·치안","summary":"법무·계약·지식재산 / 컴플라이언스·감사·내부통제 / 공공행정·정책·공공사업 / 경찰·교정·국방 / 소방·재난안전 / 경비·경호·보안서비스 / 법률전문직(법조·변리·법무사)","codes":["J14","J15","J16","J17","J18","J19","J103"]},{"no":"06","name":"마케팅·홍보","summary":"마케팅·브랜드 / 디지털·퍼포먼스마케팅 / 시장조사·고객분석 / 홍보·PR·기업커뮤니케이션","codes":["J20","J21","J22","J23"]},{"no":"07","name":"영업·커머스·고객서비스","summary":"영업·영업관리·기술영업 / 해외영업·무역 / MD·상품운영·이커머스 / 고객서비스·CX·고객성공","codes":["J24","J25","J26","J27","J97"]},{"no":"08","name":"구매·공급망·물류","summary":"구매·조달·소싱 / SCM·수요·공급계획 / 물류운영·창고·풀필먼트 / 운송·포워딩·수배송관리","codes":["J28","J29","J30","J31"]},{"no":"09","name":"연구개발·공학설계","summary":"R&D기획·기술전략·선행연구 / 기계·기구설계 / 전기·전자·회로설계 / 소재·화학·바이오 연구개발 / 시험·평가·검증·인증","codes":["J32","J33","J34","J35","J36"]},{"no":"10","name":"생산·공정·품질·설비","summary":"생산관리 / 생산기술·공정기술 / 품질관리·품질보증 / 설비·보전·정비 / 기술지원·필드서비스 / 운송장비 정비(항공·자동차·선박·철도)","codes":["J37","J38","J39","J40","J41","J104"]},{"no":"11","name":"IT·소프트웨어·보안","summary":"IT기획·IT프로젝트관리 / 소프트웨어개발 / ERP·업무시스템 개발·운영 / 클라우드·서버·DevOps / 네트워크·통신 / 정보보안·개인정보보호","codes":["J42","J43","J44","J45","J46","J47"]},{"no":"12","name":"데이터·AI","summary":"데이터분석·BI / 데이터엔지니어링 / AI·머신러닝","codes":["J48","J49","J50"]},{"no":"13","name":"디자인","summary":"UX·UI디자인 / 제품·산업디자인 / 시각·브랜드·그래픽디자인","codes":["J51","J52","J53","J99"]},{"no":"14","name":"콘텐츠·미디어·문화예술","summary":"디지털콘텐츠 기획·제작 / 방송·영상·미디어제작 / 언론·출판·편집 / 문화예술·공연·전시기획 / 통번역·언어서비스 / 아티스트매니지먼트·A&R / 학예·사서·기록관리","codes":["J54","J55","J56","J57","J58","J92","J96","J102"]},{"no":"15","name":"교육·상담·복지·연구","summary":"교육·강의·직업훈련 / 교육기획·교수설계·교육콘텐츠 / 조사·사회과학연구 / 상담·진로·고용서비스 / 사회복지·보육·돌봄·지역사회서비스 / 비영리모금·후원개발 / 초·중등·유아·특수 교원 / 종교·성직·종교단체 운영","codes":["J59","J60","J61","J62","J63","J93","J98","J101","J106"]},{"no":"16","name":"보건·의료","summary":"의료진료 / 약무·약사 / 간호 / 임상검사·영상·의료기술 / 재활·치료 / 보건·건강증진·의료행정 / RA·임상개발","codes":["J64","J65","J66","J67","J68","J69","J91"]},{"no":"17","name":"건설·건축·부동산","summary":"건축·도시·조경설계 / 토목·측량·공간정보 / 건설시공·공사관리 / 플랜트·건축설비 / 시설관리·유지보수 / 부동산개발·투자·자산관리","codes":["J70","J71","J72","J73","J74","J78"]},{"no":"18","name":"환경·에너지·산업안전","summary":"환경·기후관리 / 에너지·전력 / 산업·건설안전·보건","codes":["J75","J76","J77","J100"]},{"no":"19","name":"관광·외식·스포츠·뷰티","summary":"호텔·숙박운영 / 관광·여행·MICE / 외식·조리·식음서비스 / 스포츠·레저·생활체육 / 뷰티·미용서비스 / 카지노딜러·게임운영 / 예식·장례서비스","codes":["J79","J80","J81","J82","J83","J95","J105"]},{"no":"20","name":"항공·철도·선박 운항","summary":"항공운항·객실·지상서비스 / 철도운전·관제·승무·역무 / 선박운항·기관·해운운영 / 운전·운송서비스(버스·택시·화물)","codes":["J84","J85","J86","J107"]},{"no":"21","name":"농림·축산·수산","summary":"농업·원예·스마트농업 / 축산·동물관리·동물보건 / 산림·임업 / 수산·어업·양식","codes":["J87","J88","J89","J90"]}];
+/* v1.4: AI 시대 업무 지도 — 조각 파일(data/ai/roles.js) 지연 로딩 */
+const SHARD_P = {}, SHARD_W = {}, LAZY = { ver: 'v1.4' };
+window.__HT_SHARD = function (kind, key, data) { const w = SHARD_W[kind + '/' + key]; if (w) { w.done = true; w.res(data); } };
+function loadShard(kind, key) {
+  const id = kind + '/' + key;
+  if (SHARD_P[id]) return SHARD_P[id];
+  SHARD_P[id] = new Promise(function (res, rej) {
+    const w = SHARD_W[id] = { done: false, res: res };
+    const sc = document.createElement('script');
+    const fail = function () { delete SHARD_P[id]; delete SHARD_W[id]; if (sc.parentNode) sc.parentNode.removeChild(sc); rej(new Error('shard ' + id)); };
+    sc.async = true;
+    sc.src = 'data/' + id + '.js' + (LAZY.ver ? '?v=' + LAZY.ver : '');
+    sc.onerror = fail;
+    sc.onload = function () { if (!w.done) fail(); else if (sc.parentNode) sc.parentNode.removeChild(sc); };
+    document.head.appendChild(sc);
+  });
+  return SHARD_P[id];
+}
+/* v12.222: AI 시대 업무 지도 — 직무의 주요·신입 업무를 AI 활용(A)·사람과 함께(B)·지시·검증·책임(C)으로 나눠 보여준다(data/ai/roles.js, 시범 10개 직무) */
+const AI_ZONE = { A: ['AI 활용', 'zA'], B: ['함께', 'zB'], C: ['지시·책임', 'zC'] };
+const AI_EVL = { H: '문서·정보처리형 (AI 고노출 직군)', M: '혼합형 (문서·판단·현장 혼재)', C: '대면·자격·돌봄형 (AI 보완도 높은 직군)', F: '현장·신체형 (AI 저노출 직군)' };
+const AI_LICENSED = { J09: '회계·세무 판단과 신고의 책임은 사람에게 있습니다.', J14: '법적 판단과 최종 책임은 변호사 등 자격자에게 있습니다.', J66: '면허가 필요한 간호 행위와 환자 안전 책임은 사람에게 있습니다.', J64: '진단·치료 결정과 의료 행위의 법적 책임은 의사에게 있습니다.', J65: '조제·복약지도와 약물 안전 책임은 약사에게 있습니다.', J67: '면허가 필요한 검사·촬영 행위와 환자 안전 책임은 사람에게 있습니다.', J68: '면허가 필요한 치료 행위와 환자 안전 책임은 사람에게 있습니다.', J103: '법률 판단과 최종 책임은 변호사·변리사·법무사 등 자격자에게 있습니다.' };
+function aiRoleHtml(job, d) {
+  const mj = job.majorTasks || [], en = job.entryTasks || [];
+  if (!d || mj.length !== d.m.length || en.length !== d.e.length) return '';
+  const cnt = function (z) { const o = { A: 0, B: 0, C: 0 }; z.split('').forEach(function (k) { o[k]++; }); return o; };
+  const ce = cnt(d.e), cm = cnt(d.m);
+  const rows = function (ts, z) { return '<div class="ai-rows">' + ts.map(function (t, i) { const m = AI_ZONE[z.charAt(i)]; return '<div><span class="zc ' + m[1] + '">' + m[0] + '</span><span>' + esc(t) + '</span></div>'; }).join('') + '</div>'; };
+  let h = '<details class="more ai-role"><summary><span>AI 시대 업무 지도</span><span class="muted small">신입 업무 ' + en.length + '개 중 AI 활용 ' + ce.A + '</span></summary><div class="in">';
+  h += '<p class="small ai-legend" style="margin:0 0 10px"><span class="zc zA">AI 활용</span> AI가 초안·처리 · <span class="zc zB">함께</span> AI 결과를 사람이 보정 · <span class="zc zC">지시·책임</span> 사람이 판단·책임</p>';
+  h += '<p class="small muted" style="margin:0 0 6px">신입이 맡는 업무 ' + en.length + '개 중</p><div class="ai-bar" role="img" aria-label="신입 업무 구간: AI 활용 ' + ce.A + ', 함께 ' + ce.B + ', 지시·책임 ' + ce.C + '">';
+  ['A', 'B', 'C'].forEach(function (k) { if (ce[k]) h += '<div class="' + AI_ZONE[k][1] + '" style="flex:' + ce[k] + '">' + AI_ZONE[k][0] + ' ' + ce[k] + '</div>'; });
+  h += '</div><p class="small muted" style="margin:4px 0 10px">주요 업무 ' + mj.length + '개 중 AI 활용 ' + cm.A + ' · 함께 ' + cm.B + ' · 지시·책임 ' + cm.C + '</p>';
+  h += '<b class="small">신입 업무</b>' + rows(en, d.e) + '<b class="small" style="display:block;margin-top:10px">주요 업무</b>' + rows(mj, d.m);
+  h += '<div class="ask" style="margin:12px 0 0"><b>신입 업무는 이렇게 바뀝니다</b><p class="small" style="margin:4px 0 0">' + esc(d.chg) + '</p></div>';
+  h += '<b class="small" style="display:block;margin-top:10px">AI를 지휘하려면</b>' + listHtml(d.sk);
+  if (AI_LICENSED[job.code]) h += '<p class="small" style="margin:8px 0 0"><b>자격·책임</b> ' + esc(AI_LICENSED[job.code]) + '</p>';
+  h += '<p class="small muted" style="margin:10px 0 0">근거 등급: <b>' + esc((AI_EVL[d.t] || AI_EVL.M)) + '</b><br>한국은행 BOK 이슈노트(2025-30·2026-25), Anthropic(2026.3), 세계경제포럼 WEF(2025·2026) 자료와 대조해 검증했습니다(' + esc((window.__AI_ROLES_VER || '2026-11-18')) + '). 업무별 공식 판정이 아니라 직업군 단위 근거에 맞춘 분류입니다. “AI 활용”은 AI를 쓸 수 있는 가능성이며, 이미 도입된 수준을 뜻하지 않습니다. 기관·직급·AI 도입 수준에 따라 달라집니다.</p></div></details>';
+  return h;
+}
+function fillAiRole(code) {
+  loadShard('ai', 'roles').then(function (all) {
+    const box = document.getElementById('aiRoleBox'); const d = all && all[code];
+    if (!box || box.getAttribute('data-job') !== code || !d) return;
+    const pk = DB.jobPackages[code]; const job = pk && pk.job; if (!job) return;
+    window.__AI_ROLES_VER = all._meta && all._meta.ver;
+    box.innerHTML = aiRoleHtml(job, d);
+  }).catch(function () {});
+}
 function jobGroupOf(code) { return JOB_GROUP_META.find(function (g) { return g.codes.indexOf(code) !== -1; }) || null; }
 const PUBLIC_SECTOR_META = [
   { value: '산업/진흥', description: '산업 육성·기술 진흥과 정책금융·수출·투자를 지원' },
@@ -1676,8 +1732,21 @@ function renderIndustryGroups() {
       '<span class="c">산업 ' + count + '개 보기</span></button>';
   }).join('');
 }
+/* v1.4: 산업·직무를 보고 있으면 1단계(생태계·직무대영역 고르기)를 자동으로 접는다. 버튼으로 다시 펼 수 있다 */
+function setStepFold(stepId, btnId, fold) {
+  const st = $(stepId), bt = $(btnId);
+  if (!st || !bt) return;
+  st.classList.toggle('folded', !!fold);
+  bt.setAttribute('aria-expanded', fold ? 'false' : 'true');
+  bt.textContent = fold ? '펴기' : '접기';
+}
+function setIndustryGroupFold(f) { setStepFold('industryGroupStep', 'industryGroupToggle', f); }
+function setJobGroupFold(f) { setStepFold('jobGroupStep', 'jobGroupToggle', f); }
+function toggleIndustryGroupFold() { setIndustryGroupFold(!$('industryGroupStep').classList.contains('folded')); }
+function toggleJobGroupFold() { setJobGroupFold(!$('jobGroupStep').classList.contains('folded')); }
 function selectIndustryGroup(key, keepDetail) {
   STATE.industryGroup = key;
+  if (!keepDetail) setIndustryGroupFold(false);
   if (!keepDetail) STATE.industryCode = '';
   document.querySelectorAll('[data-igroup]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-igroup') === key); });
   const list = DB.industries.filter(function (i) { return i.group === key; });
@@ -1698,6 +1767,7 @@ function updateIndustryCrumb() {
 }
 function resetIndustryGroup() {
   STATE.industryGroup = ''; STATE.industryCode = '';
+  setIndustryGroupFold(false);
   document.querySelectorAll('[data-igroup]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
   $('industrySelectWrap').classList.add('hidden');
   $('industryCrumb').classList.add('hidden');
@@ -2143,6 +2213,7 @@ function showIndustry(code) {
   updateIndustryCrumb();
   const box = $('industryDetail');
   if (!code) { box.innerHTML = ''; return; }
+  setIndustryGroupFold(true);
   const pkg = industryPkg(code);
   if (!pkg) { box.innerHTML = '<p class="warn">이 산업의 상세 정보를 찾지 못했습니다.</p>'; return; }
   const ind = pkg.industry || {};
@@ -2665,6 +2736,7 @@ function renderJobGroups() {
 }
 function selectJobGroup(no, keepDetail) {
   STATE.jobGroup = no;
+  if (!keepDetail) setJobGroupFold(false);
   if (!keepDetail) STATE.jobCode = '';
   document.querySelectorAll('[data-jgroup]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-jgroup') === no); });
   const g = JOB_GROUP_META.find(function (x) { return x.no === no; });
@@ -2682,6 +2754,7 @@ function updateJobCrumb() {
 }
 function resetJobGroup() {
   STATE.jobGroup = ''; STATE.jobCode = '';
+  setJobGroupFold(false);
   document.querySelectorAll('[data-jgroup]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
   $('jobSelectWrap').classList.add('hidden');
   $('jobCrumb').classList.add('hidden');
@@ -2762,6 +2835,7 @@ function showJob(code) {
   updateJobCrumb();
   const box = $('jobDetail');
   if (!code) { box.innerHTML = ''; return; }
+  setJobGroupFold(true);
   const pkg = jobPkg(code);
   if (!pkg) { box.innerHTML = '<p class="warn">직무 정보를 찾지 못했습니다.</p>'; return; }
   const job = pkg.job || {};
@@ -2801,6 +2875,7 @@ function showJob(code) {
     '<div><b>자격·면허</b>' + certTierHtml(job, prep) + '</div></div>';
   h += certLawHtml(job);
   if (job.aiImpact) h += '<div class="ask"><b>AI가 이 직무를 바꾸는 방식</b><p class="small" style="margin:4px 0 0">' + esc(job.aiImpact) + '</p></div>';
+  h += '<div id="aiRoleBox" data-job="' + esc(code) + '"></div>'; setTimeout(function () { fillAiRole(code); }, 0);
   h += '<h3>이 직무가 많이 일하는 산업</h3>' +
     (topIndustries.length ? industryLinkTags(topIndustries) : '<p class="muted small">핵심 연결 산업이 없습니다. 아래 ‘직접 연결’ 산업을 보세요.</p>');
   if (moreIndustries.length) {
