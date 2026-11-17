@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- v1.1 (2026-10-07): 로고 색상을 로열블루 그라데이션 + 금빛 포인트로 변경 -->
+<!-- v1.2 (2026-11-17): 헬퍼탐 v12.218~219 반영 — 학과 탐색 추천 다양화('넓혀 보기' 목록), 진로 결정 단계 체크포인트 표시 + 졸업 단계 경력 전환·재취업 트랙·일경험 문구. 학년 단계는 1~4학년·졸업 유지, 중·고등학생 내용 미포함, sw.js v17 -->
 <!-- 헬퍼손 산업직무(구 헬퍼탐 미니) v1.0 (2026-10-07): v12.111 기반 — 산업 탐색·직무 탐색·진로 결정·진로 로드맵 4개 탭만 유지(홈·공공기관·진단·구글 시트 전송 제거) -->
 <!-- v12.111 (2026-10-07): 로고 시안 6(상승 화살표 H)로 교체 — 헤더·파비콘·홈화면 아이콘 -->
 <html lang="ko">
@@ -3130,7 +3131,30 @@ function fmtH(h) {
   if (h < 1) return Math.round(h * 60) + '분';
   return (Number.isInteger(h) ? h : h.toFixed(1)) + '시간';
 }
-function planPhases(months, job, prep) {
+const GRAD_TRACKS = [
+  { name: '경력 전환 트랙 (다른 직무·산업으로 이동)', items: ['지금까지의 경력·경험에서 목표 직무로 옮겨 쓸 수 있는 역량 3가지를 공고 요구역량과 1:1로 연결하기', '부족한 역량은 직업훈련·자격·프로젝트로 3~6개월 안에 보완하기', '이전 경력을 새 직무의 성과 언어(문제-행동-결과)로 바꿔 이력서·경력기술서 다시 쓰기', '현직자 인터뷰 2~3회로 전환 직무의 실제 업무와 진입 경로 확인하기'] },
+  { name: '재취업 트랙 (공백 후 복귀)', items: ['공백 기간은 교육·프로젝트·단기 일경험 등 활동으로 설명할 수 있게 정리하기', '고용24·국민취업지원제도 등 공공 고용서비스 상담으로 이용 가능한 프로그램 확인하기(요건은 공식 사이트에서 확인)', '경력·신입 구분 없이 지원 가능한 상시·수시채용 공고를 찾아 주 2회 이상 지원 현황 기록하기', '이력서 첫 화면에 최근 활동과 직무 키워드가 보이도록 수정하기'] }
+];
+function checkpointHtml(v) {
+  const g = STATUS_GUIDE[v.status]; if (!g) return '';
+  let h = '<div class="plan-sec"><h3>내 단계 체크포인트 · ' + esc(g.label) + '</h3>' + listHtml(g.items);
+  if (v.status === 'grad') h += '<div class="grid g2" style="margin-top:8px">' + GRAD_TRACKS.map(function (t) { return '<div class="ask" style="margin:0"><b>' + esc(t.name) + '</b>' + listHtml(t.items) + '</div>'; }).join('') + '</div>';
+  return h + '</div>';
+}
+function planPhases(months, job, prep, st) {
+  const ph = planPhasesBase(months, job, prep);
+  if (st === 'grad') ph.forEach(function (p) {
+    p.focus = String(p.focus).replace('(인턴·현장실습)', '(일경험·직무교육)');
+    p.acts = p.acts.map(function (a) {
+      if (a.indexOf('방학 1회 이상 인턴') === 0) return '일경험·직무교육·단기 프로젝트에 1회 이상 참여하고 성과를 수치로 기록하기';
+      if (a.indexOf('채용연계형 인턴·상하반기 공채') === 0) return '상시·수시채용 공고 일정과 지원 가능한 경력·신입 공고를 구분해 지원 달력 만들기';
+      return a;
+    });
+    if (/현장성|현장경험/.test(p.focus)) p.acts = p.acts.concat(['이전 경력·경험 중 목표 직무에 옮겨 쓸 수 있는 역량을 이력서 문장으로 바꿔 쓰기']);
+  });
+  return ph;
+}
+function planPhasesBase(months, job, prep) {
   const major = first(job.majorTasks, 3);
   const entry = first(job.entryTasks, 3);
   const project = first(prep.recommendedProject, 2);
@@ -3192,7 +3216,7 @@ function makePlan() {
   if (!ip || !jp) { box.innerHTML = '<p class="warn">선택한 산업·직무 정보를 찾지 못했습니다.</p>'; return; }
   const ind = ip.industry, job = jp.job, prep = jp.preparation || {};
   const pub = v.p ? publicPkg(v.p) : null;
-  const phases = planPhases(v.months, job, prep);
+  const phases = planPhases(v.months, job, prep, v.status);
   const alloc = weeklyAllocation(v.hours);
   const kpi = planKpi(v.months, v.hours);
   let h = '<div class="plan-title"><div><div class="muted small">나의 ' + v.months + '개월 진로 로드맵 · ' + new Date().toLocaleDateString('ko-KR') + '</div>' +
@@ -3214,6 +3238,7 @@ function makePlan() {
     alloc.map(function (r) { return '<tr><td><b>' + esc(r.name) + '</b></td><td class="n">' + fmtH(r.h) + '</td><td>' + esc(r.what) + '</td></tr>'; }).join('') +
     '</tbody></table></div><p class="muted small">시험기간·인턴·채용시즌에는 비중을 조정해도 됩니다. 주 4시간 미만이면 한 번에 한 영역만 집중하는 편이 효과적입니다.</p></div>';
 
+  h += checkpointHtml(v);
   let roadH = '<div style="margin-top:6px">' + phases.map(function (p) {
     return '<div class="phase"><div class="when"><b>' + esc(p.when) + '</b><span>' + esc(p.focus) + '</span></div><div>' +
       (p.sub ? '<div class="small" style="font-weight:600;margin-bottom:2px">직무별 권장 · ' + esc(p.sub) + '</div>' : '') + listHtml(p.acts) + '</div></div>';
@@ -3783,13 +3808,24 @@ function majorRecommend(DBx, refMap, r, n) {
     return out;
   };
   const icN = norm(ic, icnt, refMap, IN, 40), jcN = norm(jc, jcnt, JOB_MAJOR_REFERENCE, JB, 8);
-  const top = function (map, names) {
+  /* v12.218: 한 산업그룹·직무군에 쏠리지 않도록 그룹당 최대 2개로 상위 목록을 구성하고, 다른 그룹의 연결 항목은 '넓혀 보기' 목록으로 따로 제공 */
+  const IG = {}; DBx.industries.forEach(function (x) { IG[x.code] = x.group || x.code; });
+  const gKey = function (kind, c) { if (kind === 'I') return 'I' + (IG[c] || c); const g = (typeof jobGroupOf === 'function') ? jobGroupOf(c) : null; return 'J' + (g ? g.no : c); };
+  const top = function (map, names, kind) {
     const arr = Object.keys(map).filter(function (c) { return names[c]; }).map(function (c) { return { code: c, name: names[c], score: map[c] }; });
     arr.sort(function (a, b) { return b.score - a.score || (a.code < b.code ? -1 : 1); });
     const max = arr.length && arr[0].score > 0 ? arr[0].score : 1;
-    return arr.slice(0, n).map(function (x) { x.pct = Math.max(8, Math.round(x.score / max * 100)); return x; });
+    const cnt = {}, main = [], rest = [];
+    arr.forEach(function (x) { const g = gKey(kind, x.code); if (main.length < n && (cnt[g] || 0) < 2) { cnt[g] = (cnt[g] || 0) + 1; main.push(x); } else rest.push(x); });
+    while (main.length < n && rest.length) main.push(rest.shift());
+    const used = {}; main.forEach(function (x) { used[gKey(kind, x.code)] = 1; });
+    const more = [];
+    rest.forEach(function (x) { const g = gKey(kind, x.code); if (more.length < 6 && x.score > 0 && !used[g]) { used[g] = 1; more.push(x); } });
+    const fin = function (x) { x.pct = Math.max(8, Math.round(x.score / max * 100)); return x; };
+    return { list: main.map(fin), more: more.map(fin) };
   };
-  return { industries: top(icN, IN), jobs: top(jcN, JB), evidence: evidence };
+  const ti = top(icN, IN, 'I'), tj = top(jcN, JB, 'J');
+  return { industries: ti.list, jobs: tj.list, moreI: ti.more, moreJ: tj.more, evidence: evidence };
 }
 
 /* ===== v1.3 학과 탐색 화면 ===== */
@@ -3985,7 +4021,9 @@ function majorApplyGuide(out, g, IN, JB) {
     (cur || []).forEach(function (x) { if (res.length < 5 && !seen[x.code]) { seen[x.code] = 1; res.push(x); } });
     return res.slice(0, 5);
   };
-  return { industries: pick(g.ind, out.industries, IN), jobs: pick(g.job, out.jobs, JB), evidence: out.evidence, guide: g };
+  const ri = pick(g.ind, out.industries, IN), rj = pick(g.job, out.jobs, JB);
+  const dropIn = function (more, res) { const have = {}; res.forEach(function (x) { have[x.code] = 1; }); return (more || []).filter(function (x) { return !have[x.code]; }); };
+  return { industries: ri, jobs: rj, moreI: dropIn((out.industries || []).slice(5).concat(out.moreI || []), ri), moreJ: dropIn((out.jobs || []).slice(5).concat(out.moreJ || []), rj), evidence: out.evidence, guide: g };
 }
 function majorGuideHtml(g) {
   const certs = g.certs.map(function (c) {
@@ -4012,7 +4050,8 @@ function majorShow(r, q, scroll) {
   DB.jobs.forEach(function (x) { JB0[x.code] = x.name; });
   const gd = majorGuideFor(r, q);
   const out = majorApplyGuide(majorRecommend(DB, INDUSTRY_MAJOR_REFERENCE, r, 8), gd, IN0, JB0);
-  if (!gd) { out.industries = out.industries.slice(0, 5); out.jobs = out.jobs.slice(0, 5); }
+  if (!gd) { out.moreI = out.industries.slice(5).concat(out.moreI || []); out.moreJ = out.jobs.slice(5).concat(out.moreJ || []); out.industries = out.industries.slice(0, 5); out.jobs = out.jobs.slice(0, 5); }
+  out.moreI = (out.moreI || []).slice(0, 6); out.moreJ = (out.moreJ || []).slice(0, 6);
   STATE.major = out;
   const thin = out.evidence < 30;
   const short = out.industries.length < 5 || out.jobs.length < 5;
@@ -4030,6 +4069,7 @@ function majorShow(r, q, scroll) {
     (short ? '<p class="small muted" style="margin:6px 0 0">연결 데이터가 있는 항목이 적어 산업 ' + out.industries.length + '개·직무 ' + out.jobs.length + '개만 표시합니다. 무관한 항목으로 채우지 않았으니 산업·직무 탐색에서 직접 둘러보세요.</p>' : '') + '</div>';
   h += '<div class="mj-cols"><div class="mj-col"><h3>추천 산업 TOP ' + out.industries.length + '</h3><p class="small muted" style="margin:0">전공 연결이 높은 산업 순 · 이름을 누르면 상세로 이동</p>' + majorRows('INDUSTRY', out.industries) + '</div>' +
     '<div class="mj-col"><h3>추천 직무 TOP ' + out.jobs.length + '</h3><p class="small muted" style="margin:0">전공 연결이 높은 직무 순 · 이름을 누르면 상세로 이동</p>' + majorRows('JOB', out.jobs) + '</div></div>' +
+    ((out.moreI.length || out.moreJ.length) ? '<details class="more"><summary>다른 산업·직무로 넓혀 보기 (산업 ' + out.moreI.length + ' · 직무 ' + out.moreJ.length + ')</summary><div class="in"><p class="small muted" style="margin:0 0 6px">위 추천과 다른 산업군·직무군에서 전공 연결이 확인된 항목입니다. 연결은 상대적으로 약할 수 있으니 채용공고로 요구 전공·역량을 확인하세요.</p><div class="mj-cols"><div class="mj-col"><h3>산업</h3>' + majorRows('INDUSTRY', out.moreI) + '</div><div class="mj-col"><h3>직무</h3>' + majorRows('JOB', out.moreJ) + '</div></div></div></details>' : '') +
     (gd ? majorGuideHtml(gd) : '') +
     '<div class="btn-row no-print"><button class="btn primary" type="button" onclick="majorAddAll()">추천 항목 관심목록에 담기</button>' +
     '<button class="btn" type="button" onclick="openPage(\'industryPage\')">산업 탐색으로 이동</button>' +
